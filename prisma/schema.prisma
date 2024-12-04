@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//schema  model
+
+// Enums
+enum UserRole {
+  USER
+  VENDOR
+  ADMIN
+}
+
+enum ActiveStatus {
+  ACTIVE
+  BLOCKED
+  SUSPENDED
+  DELETED
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+}
+
+// Models
+model User {
+  id           String  @id @default(uuid())
+  name         String
+  email        String  @unique
+  password     String
+  profilePhoto String?
+
+  role      UserRole     @default(USER)
+  status    ActiveStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt()
+
+  // Relations
+  shops         Shop[]
+  orders        Order[]
+  reviews       Review[]
+  followedShops ShopFollower[]
+
+  @@map("user")
+}
+
+model Shop {
+  id          String       @id @default(uuid())
+  name        String
+  description String
+  imageUrl    String?
+  ownerId     String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt()
+  status      ActiveStatus @default(ACTIVE)
+
+  // Relations
+  owner     User           @relation(fields: [ownerId], references: [id])
+  products  Product[]
+  followers ShopFollower[]
+
+  @@map("shop")
+}
+
+model ShopFollower {
+  userId     String
+  shopId     String
+  followedAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  shop Shop @relation(fields: [shopId], references: [id])
+
+  @@id([userId, shopId])
+  @@map("shopFollower")
+}
+
+model Category {
+  id        String  @id @default(uuid())
+  name      String  @unique
+  isDeleted Boolean @default(false)
+
+  // Relations
+  products Product[]
+
+  @@map("category")
+}
+
+model Product {
+  id             String  @id @default(uuid())
+  name           String
+  description    String
+  price          Float
+  inventoryCount Int
+  discount       Float?
+  shopId         String
+  categoryId     String
+  imageUrl       String?
+
+  // Flash Sale Fields
+  isFlashSale        Boolean   @default(false)
+  flashSalePrice     Float?
+  flashSaleStartDate DateTime?
+  flashSaleEndDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+  isDeleted Boolean  @default(false)
+
+  // Relations
+  shop      Shop        @relation(fields: [shopId], references: [id])
+  category  Category    @relation(fields: [categoryId], references: [id])
+  reviews   Review[]
+  OrderItem OrderItem[]
+
+  @@map("product")
+}
+
+model Order {
+  id            Int           @id @default(autoincrement())
+  userId        String
+  totalPrice    Float
+  paymentStatus PaymentStatus
+  paymentMethod String
+  couponId      Int?
+  createdAt     DateTime      @default(now())
+
+  // Relations
+  user   User        @relation(fields: [userId], references: [id])
+  coupon Coupon?     @relation(fields: [couponId], references: [id])
+  items  OrderItem[]
+
+  @@map("order")
+}
+
+model OrderItem {
+  id        Int    @id @default(autoincrement())
+  orderId   Int
+  productId String
+  quantity  Int    @default(1)
+  price     Float
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("orderItem")
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String?
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  isDeleted Boolean  @default(false)
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("review")
+}
+
+model Coupon {
+  id             Int      @id @default(autoincrement())
+  code           String   @unique
+  discountAmount Float
+  expirationDate DateTime
+  createdAt      DateTime @default(now())
+
+  // Relations
+  orders Order[]
+
+  @@map("coupon")
+}
