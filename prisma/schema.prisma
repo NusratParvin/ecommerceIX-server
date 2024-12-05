@@ -88,9 +88,11 @@ model ShopFollower {
 }
 
 model Category {
-  id        String  @id @default(uuid())
-  name      String  @unique
-  isDeleted Boolean @default(false)
+  id        String   @id @default(uuid())
+  name      String   @unique
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
 
   // Relations
   products Product[]
@@ -99,15 +101,15 @@ model Category {
 }
 
 model Product {
-  id             String  @id @default(uuid())
-  name           String
-  description    String
-  price          Float
-  inventoryCount Int
-  discount       Float?
-  shopId         String
-  categoryId     String
-  imageUrl       String?
+  id          String  @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  stock       Int
+  discount    Float?
+  shopId      String
+  categoryId  String
+  imageUrl    String?
 
   // Flash Sale Fields
   isFlashSale        Boolean   @default(false)

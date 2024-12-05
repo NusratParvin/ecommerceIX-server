@@ -5,6 +5,11 @@ type TResponseData<T> = {
   success: boolean;
   message: string;
   data?: T | null;
+  meta?: {
+    page: number;
+    limit: number;
+    total?: number;
+  };
 };
 
 const sendResponse = <T>(res: Response, params: TResponseData<T>) => {
@@ -12,6 +17,7 @@ const sendResponse = <T>(res: Response, params: TResponseData<T>) => {
     status: params.statusCode,
     success: params.success,
     message: params.message,
+    meta: params.meta || null || undefined,
   };
 
   if (params.data !== undefined) {

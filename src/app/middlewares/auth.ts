@@ -12,8 +12,9 @@ const auth = (...roles: string[]) => {
     next: NextFunction
   ) => {
     try {
+      // console.log(req.headers);
       const token = req.headers.authorization;
-
+      // console.log(token);
       if (!token) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, "You are not authorized!");
       }
