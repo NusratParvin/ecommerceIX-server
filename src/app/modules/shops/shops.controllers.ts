@@ -60,9 +60,24 @@ const updateShop = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateShopStatus = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const updatedShop = await ShopServices.updateShopStatusIntoDB(id, status);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: `Shop status updated to ${status}`,
+    data: updatedShop,
+  });
+});
+
 export const ShopControllers = {
   createShop,
   getAllShops,
   getMyShop,
   updateShop,
+  updateShopStatus,
 };

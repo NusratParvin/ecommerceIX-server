@@ -33,11 +33,8 @@ router.patch(
   }
 );
 
-router.get(
-  "/",
-  auth(UserRole.ADMIN, UserRole.VENDOR),
-  ShopControllers.getAllShops
-);
+router.get("/", auth(UserRole.ADMIN), ShopControllers.getAllShops);
+router.patch("/:id/status", ShopControllers.updateShopStatus);
 
 router.get("/myShop", auth(UserRole.VENDOR), ShopControllers.getMyShop);
 

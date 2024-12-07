@@ -23,6 +23,9 @@ const getCategoriesFromDB = async (filters: any, options: any) => {
     skip,
     take: limit,
     orderBy: { [sortBy]: sortOrder },
+    include: {
+      products: true,
+    },
   });
 
   // Count total records for meta
@@ -44,18 +47,31 @@ const getCategoriesForAllFromDB = async () => {
   return categories;
 };
 
-export const updateCategoryIntoDB = async (
+const updateCategoryIntoDB = async (
   id: string,
   data: Partial<{ name: string; isDeleted: boolean }>
 ) => {
-  try {
-    return await prisma.category.update({
-      where: { id },
-      data,
+  if (data.name) {
+    const existingCategory = await prisma.category.findFirst({
+      where: { name: data.name, NOT: { id } },
     });
-  } catch (error) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid category ID.");
+
+    if (existingCategory) {
+      throw new ApiError(
+        StatusCodes.CONFLICT,
+        `Category name '${data.name}' already exists.`
+      );
+    }
   }
+
+  // Update the category
+  const res = await prisma.category.update({
+    where: { id },
+    data,
+  });
+
+  // console.log(res);
+  return res;
 };
 
 const deleteCategoryFromDB = async (id: string) => {

@@ -1,7 +1,7 @@
 import prisma from "../../../shared/prisma";
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../errors/apiErrors";
-import { ActiveStatus, Shop } from "@prisma/client";
+import { ActiveStatus, Shop, ShopStatus } from "@prisma/client";
 import { TFile } from "../../interfaces/fileUpload";
 import { fileUploader } from "../../../helpers/uploadImageToCloudinary";
 import { pagination } from "../../../helpers/pagination";
@@ -97,10 +97,10 @@ const getAllShopsFromDB = async (filters: any, options: any) => {
     where.name = { contains: filters.searchTerm, mode: "insensitive" };
   }
   if (filters.status) {
-    where.status = filters.status; // Filtering by status if provided
+    where.status = filters.status;
   }
   if (filters.ownerId) {
-    where.ownerId = filters.ownerId; // Filtering by owner ID if provided
+    where.ownerId = filters.ownerId;
   }
 
   const shops = await prisma.shop.findMany({
@@ -110,12 +110,23 @@ const getAllShopsFromDB = async (filters: any, options: any) => {
     orderBy: { [sortBy]: sortOrder },
     include: {
       owner: {
-        select: { id: true, name: true, email: true }, // Include owner details if needed
+        select: { id: true, name: true, email: true },
+      },
+      _count: {
+        select: {
+          products: true,
+          followers: true,
+        },
       },
     },
   });
 
-  // Count total records for meta
+  const formattedShops = shops.map((shop) => ({
+    ...shop,
+    productCount: shop._count.products,
+    followerCount: shop._count.followers,
+  }));
+
   const totalRecords = await prisma.shop.count({ where });
 
   return {
@@ -125,7 +136,7 @@ const getAllShopsFromDB = async (filters: any, options: any) => {
       totalRecords,
       totalPages: Math.ceil(totalRecords / limit),
     },
-    data: shops,
+    data: formattedShops,
   };
 };
 
@@ -134,7 +145,6 @@ const updateShopIntoDB = async (
   data: any,
   file?: TFile
 ): Promise<Shop> => {
-  // Fetch the existing shop by ID
   const existingShop = await prisma.shop.findUnique({
     where: { id: shopId },
   });
@@ -143,20 +153,17 @@ const updateShopIntoDB = async (
     throw new ApiError(StatusCodes.NOT_FOUND, "Shop not found.");
   }
 
-  // Handle file upload if a new logo is provided
-  let logo: string | null = existingShop.logo; // Default to existing logo
+  let logo: string | null = existingShop.logo;
   if (file) {
     const uploadResult = await fileUploader.uploadImageToCloudinary(file);
-    logo = uploadResult?.secure_url || null; // Ensure `null` if undefined
+    logo = uploadResult?.secure_url || null;
   }
 
-  // Prepare updated shop data
   const updatedShopData = {
     ...data,
-    ...(logo !== null && { logo }), // Only include `logo` if it's updated
+    ...(logo !== null && { logo }),
   };
 
-  // Update the shop in the database
   const updatedShop = await prisma.shop.update({
     where: { id: shopId },
     data: updatedShopData,
@@ -165,9 +172,27 @@ const updateShopIntoDB = async (
   return updatedShop;
 };
 
+const updateShopStatusIntoDB = async (shopId: string, status: ShopStatus) => {
+  const shop = await prisma.shop.findUnique({
+    where: { id: shopId },
+  });
+
+  if (!shop) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Shop not found");
+  }
+
+  const updatedShop = await prisma.shop.update({
+    where: { id: shopId },
+    data: { status },
+  });
+
+  return updatedShop;
+};
+
 export const ShopServices = {
   createShopIntoDB,
   updateShopIntoDB,
+  updateShopStatusIntoDB,
   getAllShopsFromDB,
   getShopByOwnerFromDB,
 };

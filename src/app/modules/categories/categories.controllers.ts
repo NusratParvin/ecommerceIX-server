@@ -15,8 +15,7 @@ const getCategories = catchAsync(async (req: Request, res: Response) => {
 
   // Fetch data from the service
   const result = await CategoriesServices.getCategoriesFromDB(filters, options);
-  console.log(result);
-  // Send a standardized response
+  // console.log(result);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -41,7 +40,7 @@ const getCategoriesForAll = catchAsync(async (req: Request, res: Response) => {
 // Create a new category
 const createCategory = catchAsync(async (req: Request, res: Response) => {
   const { name } = req.body;
-  console.log(name);
+  // console.log(name);
   const newCategory = await CategoriesServices.createCategoryIntoDB(name);
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,

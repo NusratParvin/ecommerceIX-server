@@ -26,16 +26,24 @@ router.patch(
   auth(UserRole.ADMIN, UserRole.VENDOR),
   fileUploader.uploadMulter.single("file"),
   (req: Request, res: Response, next: NextFunction) => {
-    req.body =
-      // productValidationSchemas.createProductSchema.parse(
-      JSON.parse(req.body.data);
-    // );
+    req.body = JSON.parse(req.body.data);
+
     return ProductControllers.updateProduct(req, res, next);
   }
 );
 
+router.patch(
+  "/:id/status",
+  auth(UserRole.ADMIN),
+  ProductControllers.updateProductStatus
+);
+
+router.get(
+  "/get",
+  auth(UserRole.ADMIN),
+  ProductControllers.getAllProductsForAdmin
+);
 router.get("/:id", ProductControllers.getProductById);
-// router.patch("/:id", ProductControllers.updateProduct);
 router.delete("/:id", ProductControllers.deleteProduct);
 router.get("/", ProductControllers.getAllProducts);
 

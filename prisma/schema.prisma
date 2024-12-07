@@ -29,6 +29,18 @@ enum ActiveStatus {
   DELETED
 }
 
+enum ShopStatus {
+  ACTIVE
+  BLACKLISTED
+  RESTRICTED
+  DELETED
+}
+
+enum ProductStatus {
+  ACTIVE
+  HIDDEN
+}
+
 enum PaymentStatus {
   PAID
   UNPAID
@@ -57,14 +69,14 @@ model User {
 }
 
 model Shop {
-  id          String       @id @default(uuid())
+  id          String     @id @default(uuid())
   name        String
   description String
   logo        String?
   ownerId     String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt()
-  status      ActiveStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt()
+  status      ShopStatus @default(ACTIVE)
 
   // Relations
   owner     User           @relation(fields: [ownerId], references: [id])
@@ -101,7 +113,7 @@ model Category {
 }
 
 model Product {
-  id          String  @id @default(uuid())
+  id          String        @id @default(uuid())
   name        String
   description String?
   price       Float
@@ -110,6 +122,7 @@ model Product {
   shopId      String
   categoryId  String
   imageUrl    String?
+  status      ProductStatus @default(ACTIVE)
 
   // Flash Sale Fields
   isFlashSale        Boolean   @default(false)
@@ -162,8 +175,8 @@ model OrderItem {
 }
 
 model Review {
-  id        Int      @id @default(autoincrement())
-  rating    Int
+  id        String   @id @default(uuid())
+  rating    Float
   comment   String?
   userId    String
   productId String

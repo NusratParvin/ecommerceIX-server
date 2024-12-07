@@ -5,7 +5,13 @@ import sendResponse from "../../../shared/sendResponse";
 import pick from "../../../helpers/pick";
 import { ProductServices } from "./products.services";
 
-const productFilterableFields = ["name", "categoryId", "shopId", "isFlashSale"];
+const productFilterableFields = [
+  "name",
+  "categoryId",
+  "shopId",
+  "isFlashSale",
+  "searchTerm",
+];
 const paginationFields = ["limit", "page", "sortBy", "sortOrder"];
 
 const createProduct = catchAsync(async (req: Request, res: Response) => {
@@ -45,6 +51,19 @@ const updateProduct = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateProductStatus = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  // console.log(id, status, "hhfghfghfg");
+  const result = await ProductServices.updateProductStatusIntoDB(id, status);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Product updated successfully!",
+    data: result,
+  });
+});
+
 const deleteProduct = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await ProductServices.deleteProductFromDB(id);
@@ -70,10 +89,32 @@ const getAllProducts = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllProductsForAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+    // console.log("hit");
+    const filters = pick(req.query, productFilterableFields);
+    const options = pick(req.query, paginationFields);
+    console.log(filters, options, "hittttttt");
+    const result = await ProductServices.getAllProductsForAdminFromDB(
+      filters,
+      options
+    );
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Products retrieved successfully!",
+      meta: result.meta,
+      data: result.data,
+    });
+  }
+);
+
 export const ProductControllers = {
   getAllProducts,
   createProduct,
   getProductById,
+  getAllProductsForAdmin,
   updateProduct,
+  updateProductStatus,
   deleteProduct,
 };

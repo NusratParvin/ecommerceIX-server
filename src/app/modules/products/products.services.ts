@@ -2,7 +2,7 @@ import { pagination } from "../../../helpers/pagination";
 import prisma from "../../../shared/prisma";
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../errors/apiErrors";
-import { Product } from "@prisma/client";
+import { Product, ProductStatus } from "@prisma/client";
 import { TFile } from "../../interfaces/fileUpload";
 import { fileUploader } from "../../../helpers/uploadImageToCloudinary";
 
@@ -69,6 +69,14 @@ const updateProductIntoDB = async (
   });
 };
 
+const updateProductStatusIntoDB = async (id: string, status: ProductStatus) => {
+  // console.log(object);
+  return prisma.product.update({
+    where: { id },
+    data: { status },
+  });
+};
+
 const deleteProductFromDB = async (id: string) => {
   return await prisma.product.update({
     where: { id },
@@ -106,7 +114,7 @@ const getAllProductsFromDB = async (
     }),
     prisma.product.count({ where: whereClause }),
   ]);
-
+  console.log("hit here");
   return {
     meta: {
       total,
@@ -117,10 +125,55 @@ const getAllProductsFromDB = async (
   };
 };
 
+const getAllProductsForAdminFromDB = async (
+  filters: Record<string, any>,
+  options: {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  }
+) => {
+  const { page, limit, skip, sortBy, sortOrder } =
+    pagination.calculatePagination(options);
+
+  // const whereClause = {
+  //   // isDeleted: false,
+  //   ...filters,
+  // };
+  const where: any = {};
+  if (filters.searchTerm) {
+    where.name = { contains: filters.searchTerm, mode: "insensitive" };
+  }
+  // console.log({ whereClause }, "sfndjbh");
+  const [data, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { [sortBy || "createdAt"]: sortOrder || "asc" },
+      include: {
+        shop: true,
+        category: true,
+        OrderItem: true,
+        reviews: true,
+      },
+    }),
+    prisma.product.count({ where: where }),
+  ]);
+  console.log("object");
+  return {
+    meta: { total, page, limit },
+    data,
+  };
+};
+
 export const ProductServices = {
   createProductIntoDB,
   getProductByIdFromDB,
   updateProductIntoDB,
+  updateProductStatusIntoDB,
   deleteProductFromDB,
   getAllProductsFromDB,
+  getAllProductsForAdminFromDB,
 };
