@@ -10,17 +10,14 @@ const createCategoryIntoDB = async (name: string) => {
 };
 
 const getCategoriesFromDB = async (filters: any, options: any) => {
-  // Calculate pagination
   const { page, limit, skip, sortBy, sortOrder } =
-    pagination.calculatePagination(options);
+    pagination.calculatePagination(options || {});
 
-  // Construct where clause based on filters
   const where: any = {};
   if (filters.searchTerm) {
     where.name = { contains: filters.searchTerm, mode: "insensitive" };
   }
 
-  // Fetch categories with filters, sorting, and pagination
   const categories = await prisma.category.findMany({
     where,
     skip,
@@ -40,6 +37,11 @@ const getCategoriesFromDB = async (filters: any, options: any) => {
     },
     data: categories,
   };
+};
+const getCategoriesForAllFromDB = async () => {
+  const categories = await prisma.category.findMany();
+
+  return categories;
 };
 
 export const updateCategoryIntoDB = async (
@@ -65,6 +67,7 @@ const deleteCategoryFromDB = async (id: string) => {
 
 export const CategoriesServices = {
   getCategoriesFromDB,
+  getCategoriesForAllFromDB,
   createCategoryIntoDB,
   updateCategoryIntoDB,
   deleteCategoryFromDB,

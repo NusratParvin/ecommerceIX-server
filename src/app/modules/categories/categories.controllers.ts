@@ -8,14 +8,14 @@ import pick from "../../../helpers/pick";
 
 const categoryFilterableFields = ["name", "searchTerm"];
 
-export const getCategories = catchAsync(async (req: Request, res: Response) => {
+const getCategories = catchAsync(async (req: Request, res: Response) => {
   // Extract filters and pagination options from query params
   const filters = pick(req.query, categoryFilterableFields);
   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
 
   // Fetch data from the service
   const result = await CategoriesServices.getCategoriesFromDB(filters, options);
-
+  console.log(result);
   // Send a standardized response
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -23,6 +23,18 @@ export const getCategories = catchAsync(async (req: Request, res: Response) => {
     message: "Categories fetched successfully!",
     data: result.data,
     meta: result.meta,
+  });
+});
+
+const getCategoriesForAll = catchAsync(async (req: Request, res: Response) => {
+  const result = await CategoriesServices.getCategoriesForAllFromDB();
+  // console.log(result);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Categories fetched successfully!",
+    data: result,
   });
 });
 
@@ -71,6 +83,7 @@ const deleteCategory = catchAsync(async (req: Request, res: Response) => {
 
 export const CategoriesControllers = {
   getCategories,
+  getCategoriesForAll,
   createCategory,
   updateCategory,
   deleteCategory,

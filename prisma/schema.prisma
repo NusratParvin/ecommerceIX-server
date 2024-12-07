@@ -60,7 +60,7 @@ model Shop {
   id          String       @id @default(uuid())
   name        String
   description String
-  imageUrl    String?
+  logo        String?
   ownerId     String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt()
@@ -103,7 +103,7 @@ model Category {
 model Product {
   id          String  @id @default(uuid())
   name        String
-  description String
+  description String?
   price       Float
   stock       Int
   discount    Float?
@@ -131,12 +131,12 @@ model Product {
 }
 
 model Order {
-  id            Int           @id @default(autoincrement())
+  id            String        @id @default(uuid())
   userId        String
   totalPrice    Float
   paymentStatus PaymentStatus
   paymentMethod String
-  couponId      Int?
+  couponId      String?
   createdAt     DateTime      @default(now())
 
   // Relations
@@ -148,8 +148,8 @@ model Order {
 }
 
 model OrderItem {
-  id        Int    @id @default(autoincrement())
-  orderId   Int
+  id        String @id @default(uuid())
+  orderId   String
   productId String
   quantity  Int    @default(1)
   price     Float
@@ -178,7 +178,7 @@ model Review {
 }
 
 model Coupon {
-  id             Int      @id @default(autoincrement())
+  id             String   @id @default(uuid())
   code           String   @unique
   discountAmount Float
   expirationDate DateTime
