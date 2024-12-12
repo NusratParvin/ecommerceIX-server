@@ -11,13 +11,22 @@ const app: Application = express();
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// app.use(
+//   cors({
+//     origin: "https://ix-client.vercel.app",
+//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//     credentials: true,
+//   })
+// );
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://ix-client.vercel.app"], // Array for multiple origins
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,
+    credentials: true, // Allows cookies to be sent with cross-origin requests
   })
 );
+
 app.use("/api", router);
 
 app.get("/", (req: Request, res: Response) => {

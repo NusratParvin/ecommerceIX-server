@@ -40,12 +40,14 @@ const getShopByOwnerFromDB = (email) => __awaiter(void 0, void 0, void 0, functi
         },
         include: {
             _count: {
-                select: { products: true }, // Include product count
+                select: { products: true },
             },
         },
     });
     // console.log(result, "prod");
-    return Object.assign(Object.assign({}, result), { productCount: result === null || result === void 0 ? void 0 : result._count.products });
+    if (result) {
+        return Object.assign(Object.assign({}, result), { productCount: result === null || result === void 0 ? void 0 : result._count.products });
+    }
 });
 const createShopIntoDB = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, description } = req.body;
@@ -92,10 +94,10 @@ const getAllShopsFromDB = (filters, options) => __awaiter(void 0, void 0, void 0
         where.name = { contains: filters.searchTerm, mode: "insensitive" };
     }
     if (filters.status) {
-        where.status = filters.status; // Filtering by status if provided
+        where.status = filters.status;
     }
     if (filters.ownerId) {
-        where.ownerId = filters.ownerId; // Filtering by owner ID if provided
+        where.ownerId = filters.ownerId;
     }
     const shops = yield prisma_1.default.shop.findMany({
         where,
@@ -104,11 +106,17 @@ const getAllShopsFromDB = (filters, options) => __awaiter(void 0, void 0, void 0
         orderBy: { [sortBy]: sortOrder },
         include: {
             owner: {
-                select: { id: true, name: true, email: true }, // Include owner details if needed
+                select: { id: true, name: true, email: true },
+            },
+            _count: {
+                select: {
+                    products: true,
+                    followers: true,
+                },
             },
         },
     });
-    // Count total records for meta
+    const formattedShops = shops.map((shop) => (Object.assign(Object.assign({}, shop), { productCount: shop._count.products, followerCount: shop._count.followers })));
     const totalRecords = yield prisma_1.default.shop.count({ where });
     return {
         meta: {
@@ -117,35 +125,63 @@ const getAllShopsFromDB = (filters, options) => __awaiter(void 0, void 0, void 0
             totalRecords,
             totalPages: Math.ceil(totalRecords / limit),
         },
-        data: shops,
+        data: formattedShops,
     };
 });
+const getAllShopsForAllFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
+    const shops = yield prisma_1.default.shop.findMany();
+    return shops;
+});
 const updateShopIntoDB = (shopId, data, file) => __awaiter(void 0, void 0, void 0, function* () {
-    // Fetch the existing shop by ID
     const existingShop = yield prisma_1.default.shop.findUnique({
         where: { id: shopId },
     });
     if (!existingShop) {
         throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Shop not found.");
     }
-    // Handle file upload if a new logo is provided
-    let logo = existingShop.logo; // Default to existing logo
+    let logo = existingShop.logo;
     if (file) {
         const uploadResult = yield uploadImageToCloudinary_1.fileUploader.uploadImageToCloudinary(file);
-        logo = (uploadResult === null || uploadResult === void 0 ? void 0 : uploadResult.secure_url) || null; // Ensure `null` if undefined
+        logo = (uploadResult === null || uploadResult === void 0 ? void 0 : uploadResult.secure_url) || null;
     }
-    // Prepare updated shop data
     const updatedShopData = Object.assign(Object.assign({}, data), (logo !== null && { logo }));
-    // Update the shop in the database
+    console.log(updatedShopData, "service");
     const updatedShop = yield prisma_1.default.shop.update({
         where: { id: shopId },
         data: updatedShopData,
     });
     return updatedShop;
 });
+const updateShopStatusIntoDB = (shopId, status) => __awaiter(void 0, void 0, void 0, function* () {
+    const shop = yield prisma_1.default.shop.findUnique({
+        where: { id: shopId },
+    });
+    if (!shop) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Shop not found");
+    }
+    const updatedShop = yield prisma_1.default.shop.update({
+        where: { id: shopId },
+        data: { status },
+    });
+    return updatedShop;
+});
+const getFollowedShops = (userEmail) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield prisma_1.default.user.findFirst({
+        where: { email: userEmail },
+        include: { followedShops: true },
+    });
+    if (!user) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
+    }
+    // console.log(user.followedShops, "service");
+    return user.followedShops;
+});
 exports.ShopServices = {
     createShopIntoDB,
     updateShopIntoDB,
+    updateShopStatusIntoDB,
     getAllShopsFromDB,
+    getAllShopsForAllFromDB,
     getShopByOwnerFromDB,
+    getFollowedShops,
 };

@@ -7,6 +7,7 @@ const globalErrorHandlers = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log("hit here");
   res.status(StatusCodes.NOT_FOUND).json({
     success: false,
     status: err?.status || StatusCodes.NOT_FOUND,

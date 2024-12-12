@@ -18,12 +18,18 @@ const catchAsync_1 = __importDefault(require("../../../shared/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
 const pick_1 = __importDefault(require("../../../helpers/pick"));
 const products_services_1 = require("./products.services");
-const productFilterableFields = ["name", "categoryId", "shopId", "isFlashSale"];
+const productFilterableFields = [
+    "name",
+    "categoryId",
+    "shopId",
+    "isFlashSale",
+    "searchTerm",
+];
 const paginationFields = ["limit", "page", "sortBy", "sortOrder"];
 const createProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("object");
-    const file = req.file;
-    const payload = req.body;
+    // // console.log("object");
+    // const file = req.file;
+    // const payload = req.body;
     const result = yield products_services_1.ProductServices.createProductIntoDB(req);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.CREATED,
@@ -44,8 +50,20 @@ const getProductById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
 }));
 const updateProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const data = req.body;
-    const result = yield products_services_1.ProductServices.updateProductIntoDB(id, data);
+    // console.log(id, "jhsdjhkjfhjk");
+    const result = yield products_services_1.ProductServices.updateProductIntoDB(id, req);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Product updated successfully!",
+        data: result,
+    });
+}));
+const updateProductStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const { status } = req.body;
+    // console.log(id, status, "hhfghfghfg");
+    const result = yield products_services_1.ProductServices.updateProductStatusIntoDB(id, status);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
@@ -64,9 +82,52 @@ const deleteProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
     });
 }));
 const getAllProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // Parse and validate filters
+    const filters = {
+        minPrice: req.query.minPrice ? Number(req.query.minPrice) : null,
+        maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : null,
+        category: req.query.category === "null" ? null : req.query.category,
+        shop: req.query.shop === "null" ? null : req.query.shop,
+        search: req.query.search ? String(req.query.search) : "",
+    };
+    // Parse and validate pagination and sorting options
+    const options = {
+        page: req.query.page ? Number(req.query.page) : 1,
+        limit: req.query.limit ? Number(req.query.limit) : 8,
+        sortBy: req.query.sortBy ? String(req.query.sortBy) : "createdAt",
+        sortOrder: req.query.sortOrder ? String(req.query.sortOrder) : "desc",
+    };
+    // Debug logs for parsed filters and options
+    console.log("Filters:", filters);
+    console.log("Options:", options);
+    // Call the service function
+    const result = yield products_services_1.ProductServices.getAllProductsFromDB(filters, options);
+    // Return response
+    res.status(200).json({
+        success: true,
+        message: "Products retrieved successfully!",
+        meta: result.meta,
+        data: result.data,
+    });
+}));
+const getAllProductsForAdmin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const filters = (0, pick_1.default)(req.query, productFilterableFields);
     const options = (0, pick_1.default)(req.query, paginationFields);
-    const result = yield products_services_1.ProductServices.getAllProductsFromDB(filters, options);
+    const result = yield products_services_1.ProductServices.getAllProductsForAdminFromDB(filters, options);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Products retrieved successfully!",
+        meta: result.meta,
+        data: result.data,
+    });
+}));
+const getAllProductsForVendor = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.id;
+    // console.log(id);
+    const filters = (0, pick_1.default)(req.query, productFilterableFields);
+    const options = (0, pick_1.default)(req.query, paginationFields);
+    const result = yield products_services_1.ProductServices.getAllProductsForVendorFromDB(filters, options, id);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
@@ -79,6 +140,9 @@ exports.ProductControllers = {
     getAllProducts,
     createProduct,
     getProductById,
+    getAllProductsForAdmin,
+    getAllProductsForVendor,
     updateProduct,
+    updateProductStatus,
     deleteProduct,
 };

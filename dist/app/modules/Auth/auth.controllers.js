@@ -31,12 +31,14 @@ const loginUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void
     const result = yield auth_services_1.AuthServices.loginUserIntoDB(req.body);
     const { refreshToken, accessToken } = result;
     res.cookie("refreshToken", refreshToken, {
-        secure: false,
         httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
     });
     res.cookie("accessToken", accessToken, {
-        secure: false,
         httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
     });
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
@@ -44,6 +46,7 @@ const loginUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void
         message: "Logged in successfully!",
         data: {
             accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
         },
     });
 }));
@@ -55,7 +58,7 @@ const registerUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         const { token: accessToken } = result;
         // Set the access token as an HTTP-only cookie
         res.cookie("accessToken", accessToken, {
-            secure: false, // Set to true in production
+            secure: true, // Set to true in production
             httpOnly: true,
         });
         (0, sendResponse_1.default)(res, {

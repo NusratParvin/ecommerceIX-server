@@ -46,6 +46,11 @@ enum PaymentStatus {
   UNPAID
 }
 
+enum TransactionType {
+  ORDER_PAYMENT
+  SHOP_PAYOUT
+}
+
 // Models
 model User {
   id           String  @id @default(uuid())
@@ -64,6 +69,7 @@ model User {
   orders        Order[]
   reviews       Review[]
   followedShops ShopFollower[]
+  Transaction   Transaction[]
 
   @@map("user")
 }
@@ -101,6 +107,7 @@ model ShopFollower {
 
 model Category {
   id        String   @id @default(uuid())
+  imageUrl  String
   name      String   @unique
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -153,9 +160,10 @@ model Order {
   createdAt     DateTime      @default(now())
 
   // Relations
-  user   User        @relation(fields: [userId], references: [id])
-  coupon Coupon?     @relation(fields: [couponId], references: [id])
-  items  OrderItem[]
+  user        User          @relation(fields: [userId], references: [id])
+  coupon      Coupon?       @relation(fields: [couponId], references: [id])
+  items       OrderItem[]
+  Transaction Transaction[]
 
   @@map("order")
 }
@@ -201,4 +209,22 @@ model Coupon {
   orders Order[]
 
   @@map("coupon")
+}
+
+model Transaction {
+  id            String          @id @default(uuid())
+  orderId       String?
+  userId        String
+  amount        Float
+  paymentMethod String
+  paymentStatus PaymentStatus
+  type          TransactionType
+  createdAt     DateTime        @default(now())
+  description   String?
+
+  // Relations
+  order Order? @relation(fields: [orderId], references: [id])
+  user  User   @relation(fields: [userId], references: [id])
+
+  @@map("transaction")
 }

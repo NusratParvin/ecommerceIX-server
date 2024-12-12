@@ -7,10 +7,12 @@ const createCategorySchema = zod_1.z.object({
         .string()
         .min(1, "Name is required.")
         .max(50, "Name must be under 50 characters."),
+    image: zod_1.z.any(),
 });
 const updateCategorySchema = zod_1.z.object({
     name: zod_1.z.string().optional(),
     isDeleted: zod_1.z.boolean().optional(),
+    image: zod_1.z.string().optional(),
 });
 exports.categoryValidationSchemas = {
     createCategorySchema,

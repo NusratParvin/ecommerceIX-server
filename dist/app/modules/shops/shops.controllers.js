@@ -29,7 +29,7 @@ const createShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
 }));
 const getMyShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    // console.log(user);
+    console.log(user);
     const shop = yield shops_services_1.ShopServices.getShopByOwnerFromDB(user.email);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
@@ -50,10 +50,21 @@ const getAllShops = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
         data: result.data,
     });
 }));
+const getAllShopsForAll = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield shops_services_1.ShopServices.getAllShopsForAllFromDB();
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Shops fetched successfully!",
+        data: result,
+    });
+}));
 const updateShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { shopId } = req.params; // Get shopId from the route parameters
-    const data = req.body; // Get update payload from the request body
-    const file = req.file; // Get file if provided
+    const { shopId } = req.params;
+    const data = req.body;
+    // const data = req.body;
+    const file = req.file;
+    console.log(data, file, "con");
     const updatedShop = yield shops_services_1.ShopServices.updateShopIntoDB(shopId, data, file);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
@@ -62,9 +73,42 @@ const updateShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
         data: updatedShop,
     });
 }));
+const updateShopStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const { status } = req.body;
+    const updatedShop = yield shops_services_1.ShopServices.updateShopStatusIntoDB(id, status);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: `Shop status updated to ${status}`,
+        data: updatedShop,
+    });
+}));
+const fetchFollowedShops = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.email;
+    // console.log(userEmail);
+    if (!userEmail) {
+        return (0, sendResponse_1.default)(res, {
+            success: false,
+            statusCode: 401,
+            message: "Unauthorized",
+        });
+    }
+    const followedShops = yield shops_services_1.ShopServices.getFollowedShops(userEmail);
+    return (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: 200,
+        message: "Followed shops fetched successfully",
+        data: { followedShops },
+    });
+}));
 exports.ShopControllers = {
     createShop,
     getAllShops,
+    getAllShopsForAll,
     getMyShop,
     updateShop,
+    updateShopStatus,
+    fetchFollowedShops,
 };

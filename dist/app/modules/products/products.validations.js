@@ -18,6 +18,7 @@ const createProductSchema = zod_1.z.object({
     flashSalePrice: zod_1.z.preprocess((val) => (val ? parseFloat(val) : undefined), zod_1.z.number().min(0).optional()),
     flashSaleStartDate: zod_1.z.preprocess((val) => (val ? new Date(val) : undefined), zod_1.z.date().optional()),
     flashSaleEndDate: zod_1.z.preprocess((val) => (val ? new Date(val) : undefined), zod_1.z.date().optional()),
+    imageUrl: zod_1.z.string().optional(),
 });
 exports.productValidationSchemas = {
     createProductSchema,

@@ -27,6 +27,7 @@ const auth = (...roles) => {
             }
             const verifiedUser = jwtToken_1.jwtToken.verifyToken(token, config_1.default.jwt.access_token_secret);
             req.user = verifiedUser;
+            // console.log(req.user, "auth");
             if (roles.length && !roles.includes(verifiedUser.role)) {
                 throw new apiErrors_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, "Forbidden!");
             }

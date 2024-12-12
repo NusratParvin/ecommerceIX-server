@@ -19,7 +19,7 @@ const createShop = catchAsync(async (req: Request, res: Response) => {
 
 const getMyShop = catchAsync(async (req, res) => {
   const user = req.user;
-  // console.log(user);
+  console.log(user);
   const shop = await ShopServices.getShopByOwnerFromDB(user.email);
 
   sendResponse(res, {
@@ -44,12 +44,24 @@ const getAllShops = catchAsync(async (req: Request, res: Response) => {
     data: result.data,
   });
 });
+const getAllShopsForAll = catchAsync(async (req: Request, res: Response) => {
+  const result = await ShopServices.getAllShopsForAllFromDB();
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shops fetched successfully!",
+    data: result,
+  });
+});
 
 const updateShop = catchAsync(async (req: Request, res: Response) => {
-  const { shopId } = req.params; // Get shopId from the route parameters
-  const data = req.body; // Get update payload from the request body
-  const file = req.file as TFile | undefined; // Get file if provided
+  const { shopId } = req.params;
+  const data = req.body;
 
+  // const data = req.body;
+  const file = req.file as TFile | undefined;
+  console.log(data, file, "con");
   const updatedShop = await ShopServices.updateShopIntoDB(shopId, data, file);
 
   sendResponse(res, {
@@ -74,10 +86,32 @@ const updateShopStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const fetchFollowedShops = catchAsync(async (req: Request, res: Response) => {
+  const userEmail = req.user?.email;
+  // console.log(userEmail);
+  if (!userEmail) {
+    return sendResponse(res, {
+      success: false,
+      statusCode: 401,
+      message: "Unauthorized",
+    });
+  }
+  const followedShops = await ShopServices.getFollowedShops(userEmail);
+
+  return sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Followed shops fetched successfully",
+    data: { followedShops },
+  });
+});
+
 export const ShopControllers = {
   createShop,
   getAllShops,
+  getAllShopsForAll,
   getMyShop,
   updateShop,
   updateShopStatus,
+  fetchFollowedShops,
 };

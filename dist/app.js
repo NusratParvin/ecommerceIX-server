@@ -14,10 +14,17 @@ const app = (0, express_1.default)();
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
+// app.use(
+//   cors({
+//     origin: "https://ix-client.vercel.app",
+//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//     credentials: true,
+//   })
+// );
 app.use((0, cors_1.default)({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://ix-client.vercel.app"], // Array for multiple origins
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,
+    credentials: true, // Allows cookies to be sent with cross-origin requests
 }));
 app.use("/api", routes_1.default);
 app.get("/", (req, res) => {

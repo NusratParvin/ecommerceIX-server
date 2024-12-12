@@ -16,8 +16,14 @@ router.post("/", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.
     req.body = products_validations_1.productValidationSchemas.createProductSchema.parse(JSON.parse(req.body.data));
     return products_controllers_1.ProductControllers.createProduct(req, res, next);
 });
+router.patch("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.VENDOR), uploadImageToCloudinary_1.fileUploader.uploadMulter.single("file"), (req, res, next) => {
+    req.body = JSON.parse(req.body.data);
+    return products_controllers_1.ProductControllers.updateProduct(req, res, next);
+});
+router.patch("/:id/status", (0, auth_1.default)(client_1.UserRole.ADMIN), products_controllers_1.ProductControllers.updateProductStatus);
+router.get("/get", (0, auth_1.default)(client_1.UserRole.ADMIN), products_controllers_1.ProductControllers.getAllProductsForAdmin);
+router.get("/vendor", (0, auth_1.default)(client_1.UserRole.VENDOR), products_controllers_1.ProductControllers.getAllProductsForVendor);
 router.get("/:id", products_controllers_1.ProductControllers.getProductById);
-router.patch("/:id", products_controllers_1.ProductControllers.updateProduct);
 router.delete("/:id", products_controllers_1.ProductControllers.deleteProduct);
 router.get("/", products_controllers_1.ProductControllers.getAllProducts);
 exports.ProductRoutes = router;

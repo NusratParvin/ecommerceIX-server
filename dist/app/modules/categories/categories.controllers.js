@@ -25,8 +25,7 @@ const getCategories = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
     const options = (0, pick_1.default)(req.query, ["limit", "page", "sortBy", "sortOrder"]);
     // Fetch data from the service
     const result = yield categories_services_1.CategoriesServices.getCategoriesFromDB(filters, options);
-    console.log(result);
-    // Send a standardized response
+    // console.log(result);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
@@ -47,9 +46,9 @@ const getCategoriesForAll = (0, catchAsync_1.default)((req, res) => __awaiter(vo
 }));
 // Create a new category
 const createCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name } = req.body;
-    console.log(name);
-    const newCategory = yield categories_services_1.CategoriesServices.createCategoryIntoDB(name);
+    // const { name } = req.body;
+    // console.log(name);
+    const newCategory = yield categories_services_1.CategoriesServices.createCategoryIntoDB(req);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.CREATED,
         success: true,

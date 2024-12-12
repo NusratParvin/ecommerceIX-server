@@ -3,6 +3,7 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
 import { AuthServices } from "./auth.services";
+import config from "../../../config";
 
 // const registerUser = catchAsync(async (req: Request, res: Response) => {
 //   console.log(req.file);
@@ -21,12 +22,14 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
   const { refreshToken, accessToken } = result;
 
   res.cookie("refreshToken", refreshToken, {
-    secure: false,
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   });
   res.cookie("accessToken", accessToken, {
-    secure: false,
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   });
 
   sendResponse(res, {
@@ -35,6 +38,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     message: "Logged in successfully!",
     data: {
       accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
     },
   });
 });
@@ -49,7 +53,7 @@ const registerUser = catchAsync(async (req: Request, res: Response) => {
 
     // Set the access token as an HTTP-only cookie
     res.cookie("accessToken", accessToken, {
-      secure: false, // Set to true in production
+      secure: true, // Set to true in production
       httpOnly: true,
     });
 

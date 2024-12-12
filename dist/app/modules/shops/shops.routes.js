@@ -15,10 +15,26 @@ router.post("/", (0, auth_1.default)(client_1.UserRole.VENDOR), uploadImageToClo
     req.body = shops_validations_1.shopValidationSchemas.createShopSchema.parse(JSON.parse(req.body.data));
     return shops_controllers_1.ShopControllers.createShop(req, res, next);
 });
-router.patch("/:shopId", (0, auth_1.default)(client_1.UserRole.VENDOR), uploadImageToCloudinary_1.fileUploader.uploadMulter.single("file"), (req, res, next) => {
-    req.body = shops_validations_1.shopValidationSchemas.updateShopSchema.parse(JSON.parse(req.body.data));
+// router.patch(
+//   "/:shopId",
+//   auth(UserRole.VENDOR),
+//   fileUploader.uploadMulter.single("file"),
+//   (req: Request, res: Response, next: NextFunction) => {
+//     req.body = shopValidationSchemas.updateShopSchema.parse(
+//       JSON.parse(req.body.data)
+//     );
+//     return ShopControllers.updateShop(req, res, next);
+//   }
+// );
+router.patch("/:shopId", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.VENDOR), uploadImageToCloudinary_1.fileUploader.uploadMulter.single("file"), // Handle file uploads
+(req, res, next) => {
+    // Parse the `data` field in FormData
+    req.body = req.body.data ? JSON.parse(req.body.data) : {};
     return shops_controllers_1.ShopControllers.updateShop(req, res, next);
 });
-router.get("/", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.VENDOR), shops_controllers_1.ShopControllers.getAllShops);
+router.get("/", (0, auth_1.default)(client_1.UserRole.ADMIN), shops_controllers_1.ShopControllers.getAllShops);
+router.get("/getShops", shops_controllers_1.ShopControllers.getAllShopsForAll);
+router.patch("/:id/status", shops_controllers_1.ShopControllers.updateShopStatus);
 router.get("/myShop", (0, auth_1.default)(client_1.UserRole.VENDOR), shops_controllers_1.ShopControllers.getMyShop);
+router.get("/followedShops", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.USER, client_1.UserRole.VENDOR), shops_controllers_1.ShopControllers.fetchFollowedShops);
 exports.ShopsRouters = router;

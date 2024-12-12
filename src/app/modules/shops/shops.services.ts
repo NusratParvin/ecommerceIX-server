@@ -29,12 +29,14 @@ const getShopByOwnerFromDB = async (email: string) => {
     },
     include: {
       _count: {
-        select: { products: true }, // Include product count
+        select: { products: true },
       },
     },
   });
   // console.log(result, "prod");
-  return { ...result, productCount: result?._count.products };
+  if (result) {
+    return { ...result, productCount: result?._count.products };
+  }
 };
 
 const createShopIntoDB = async (req: any): Promise<Shop> => {
@@ -139,6 +141,11 @@ const getAllShopsFromDB = async (filters: any, options: any) => {
     data: formattedShops,
   };
 };
+const getAllShopsForAllFromDB = async () => {
+  const shops = await prisma.shop.findMany();
+
+  return shops;
+};
 
 const updateShopIntoDB = async (
   shopId: string,
@@ -163,7 +170,7 @@ const updateShopIntoDB = async (
     ...data,
     ...(logo !== null && { logo }),
   };
-
+  console.log(updatedShopData, "service");
   const updatedShop = await prisma.shop.update({
     where: { id: shopId },
     data: updatedShopData,
@@ -189,10 +196,26 @@ const updateShopStatusIntoDB = async (shopId: string, status: ShopStatus) => {
   return updatedShop;
 };
 
+const getFollowedShops = async (userEmail: string) => {
+  const user = await prisma.user.findFirst({
+    where: { email: userEmail },
+    include: { followedShops: true },
+  });
+
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
+  // console.log(user.followedShops, "service");
+
+  return user.followedShops;
+};
+
 export const ShopServices = {
   createShopIntoDB,
   updateShopIntoDB,
   updateShopStatusIntoDB,
   getAllShopsFromDB,
+  getAllShopsForAllFromDB,
   getShopByOwnerFromDB,
+  getFollowedShops,
 };

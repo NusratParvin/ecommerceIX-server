@@ -43,6 +43,12 @@ router.get(
   auth(UserRole.ADMIN),
   ProductControllers.getAllProductsForAdmin
 );
+router.get(
+  "/vendor",
+  auth(UserRole.VENDOR),
+  ProductControllers.getAllProductsForVendor
+);
+router.get("/flash-Sale", ProductControllers.getFlashSaleProducts);
 router.get("/:id", ProductControllers.getProductById);
 router.delete("/:id", ProductControllers.deleteProduct);
 router.get("/", ProductControllers.getAllProducts);

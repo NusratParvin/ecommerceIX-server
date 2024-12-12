@@ -12,14 +12,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CategoriesServices = exports.updateCategoryIntoDB = void 0;
+exports.CategoriesServices = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const apiErrors_1 = __importDefault(require("../../errors/apiErrors"));
 const pagination_1 = require("../../../helpers/pagination");
-const createCategoryIntoDB = (name) => __awaiter(void 0, void 0, void 0, function* () {
+const uploadImageToCloudinary_1 = require("../../../helpers/uploadImageToCloudinary");
+const createCategoryIntoDB = (req) => __awaiter(void 0, void 0, void 0, function* () {
+    const payload = req.body;
+    // console.log(payload);
+    const file = req.file;
+    if (file) {
+        const uploadToCloudinary = yield uploadImageToCloudinary_1.fileUploader.uploadImageToCloudinary(file);
+        payload.imageUrl = uploadToCloudinary === null || uploadToCloudinary === void 0 ? void 0 : uploadToCloudinary.secure_url;
+    }
+    const productInfo = Object.assign(Object.assign({}, payload), { imageUrl: payload.imageUrl });
     return yield prisma_1.default.category.create({
-        data: { name },
+        data: productInfo,
     });
 });
 const getCategoriesFromDB = (filters, options) => __awaiter(void 0, void 0, void 0, function* () {
@@ -33,6 +42,9 @@ const getCategoriesFromDB = (filters, options) => __awaiter(void 0, void 0, void
         skip,
         take: limit,
         orderBy: { [sortBy]: sortOrder },
+        include: {
+            products: true,
+        },
     });
     // Count total records for meta
     const totalRecords = yield prisma_1.default.category.count({ where });
@@ -47,21 +59,30 @@ const getCategoriesFromDB = (filters, options) => __awaiter(void 0, void 0, void
     };
 });
 const getCategoriesForAllFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    const categories = yield prisma_1.default.category.findMany();
+    const categories = yield prisma_1.default.category.findMany({
+        include: {
+            products: true,
+        },
+    });
     return categories;
 });
 const updateCategoryIntoDB = (id, data) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        return yield prisma_1.default.category.update({
-            where: { id },
-            data,
+    if (data.name) {
+        const existingCategory = yield prisma_1.default.category.findFirst({
+            where: { name: data.name, NOT: { id } },
         });
+        if (existingCategory) {
+            throw new apiErrors_1.default(http_status_codes_1.StatusCodes.CONFLICT, `Category name '${data.name}' already exists.`);
+        }
     }
-    catch (error) {
-        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "Invalid category ID.");
-    }
+    // Update the category
+    const res = yield prisma_1.default.category.update({
+        where: { id },
+        data,
+    });
+    // console.log(res);
+    return res;
 });
-exports.updateCategoryIntoDB = updateCategoryIntoDB;
 const deleteCategoryFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
     return yield prisma_1.default.category.update({
         where: { id },
@@ -72,6 +93,6 @@ exports.CategoriesServices = {
     getCategoriesFromDB,
     getCategoriesForAllFromDB,
     createCategoryIntoDB,
-    updateCategoryIntoDB: exports.updateCategoryIntoDB,
+    updateCategoryIntoDB,
     deleteCategoryFromDB,
 };

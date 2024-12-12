@@ -2,10 +2,24 @@ import { StatusCodes } from "http-status-codes";
 import prisma from "../../../shared/prisma";
 import ApiError from "../../errors/apiErrors";
 import { pagination } from "../../../helpers/pagination";
+import { Category } from "@prisma/client";
+import { fileUploader } from "../../../helpers/uploadImageToCloudinary";
+import { TFile } from "../../interfaces/fileUpload";
 
-const createCategoryIntoDB = async (name: string) => {
+const createCategoryIntoDB = async (req: any): Promise<Category> => {
+  const payload = req.body;
+  // console.log(payload);
+
+  const file = req.file as TFile;
+
+  if (file) {
+    const uploadToCloudinary = await fileUploader.uploadImageToCloudinary(file);
+    payload.imageUrl = uploadToCloudinary?.secure_url;
+  }
+  const productInfo = { ...payload, imageUrl: payload.imageUrl };
+
   return await prisma.category.create({
-    data: { name },
+    data: productInfo,
   });
 };
 
@@ -42,7 +56,11 @@ const getCategoriesFromDB = async (filters: any, options: any) => {
   };
 };
 const getCategoriesForAllFromDB = async () => {
-  const categories = await prisma.category.findMany();
+  const categories = await prisma.category.findMany({
+    include: {
+      products: true,
+    },
+  });
 
   return categories;
 };

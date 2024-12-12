@@ -32,6 +32,7 @@ const createProductSchema = z.object({
     (val) => (val ? new Date(val as string) : undefined),
     z.date().optional()
   ),
+  imageUrl: z.string().optional(),
 });
 
 export const productValidationSchemas = {

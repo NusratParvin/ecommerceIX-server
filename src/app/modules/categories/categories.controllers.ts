@@ -39,9 +39,9 @@ const getCategoriesForAll = catchAsync(async (req: Request, res: Response) => {
 
 // Create a new category
 const createCategory = catchAsync(async (req: Request, res: Response) => {
-  const { name } = req.body;
+  // const { name } = req.body;
   // console.log(name);
-  const newCategory = await CategoriesServices.createCategoryIntoDB(name);
+  const newCategory = await CategoriesServices.createCategoryIntoDB(req);
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
     success: true,
