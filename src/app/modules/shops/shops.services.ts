@@ -205,9 +205,100 @@ const getFollowedShops = async (userEmail: string) => {
   if (!user) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
   }
-  // console.log(user.followedShops, "service");
 
   return user.followedShops;
+};
+
+const followShopIntoDB = async (userEmail: string, shopId: string) => {
+  // Verify if the shop exists
+  const shop = await prisma.shop.findUnique({
+    where: { id: shopId },
+  });
+  if (!shop) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Shop not found");
+  }
+
+  // Find user by email
+  const user = await prisma.user.findFirst({
+    where: { email: userEmail },
+  });
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  const userId = user.id;
+
+  // Check if the follow relation already exists
+  const existingFollower = await prisma.shopFollower.findUnique({
+    where: {
+      userId_shopId: { userId, shopId },
+    },
+  });
+
+  if (existingFollower) {
+    return "Already following the shop";
+  }
+  const follower = await prisma.shopFollower.create({
+    data: {
+      userId: userId,
+      shopId: shopId,
+      followedAt: new Date(),
+    },
+  });
+
+  return follower;
+};
+
+const unfollowShopIntoDB = async (userEmail: string, shopId: string) => {
+  const shop = await prisma.shop.findUnique({
+    where: { id: shopId },
+  });
+  if (!shop) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Shop not found");
+  }
+
+  const user = await prisma.user.findFirst({
+    where: { email: userEmail },
+  });
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  const userId = user.id;
+
+  const followerRecord = await prisma.shopFollower.findUnique({
+    where: {
+      userId_shopId: { userId, shopId },
+    },
+  });
+
+  if (!followerRecord) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Follow record not found");
+  }
+
+  const follower = await prisma.shopFollower.delete({
+    where: {
+      userId_shopId: { userId, shopId },
+    },
+  });
+
+  return follower;
+};
+
+const getShopDetailsFromDB = async (shopId: string) => {
+  const shop = await prisma.shop.findUnique({
+    where: { id: shopId },
+    include: {
+      products: true,
+      followers: true,
+    },
+  });
+
+  if (!shop) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Shop not found");
+  }
+
+  return shop;
 };
 
 export const ShopServices = {
@@ -218,4 +309,7 @@ export const ShopServices = {
   getAllShopsForAllFromDB,
   getShopByOwnerFromDB,
   getFollowedShops,
+  unfollowShopIntoDB,
+  followShopIntoDB,
+  getShopDetailsFromDB,
 };

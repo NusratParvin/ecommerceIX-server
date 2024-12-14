@@ -17,6 +17,7 @@ import config from "../../../config";
 // });
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
+  console.log("login");
   const result = await AuthServices.loginUserIntoDB(req.body);
 
   const { refreshToken, accessToken } = result;
@@ -74,7 +75,37 @@ const registerUser = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  // console.log("forgot");
+  await AuthServices.forgotPassword(req.body);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Check your email!",
+    data: null,
+  });
+});
+
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const token = req.headers.authorization || "";
+  // const token = req.headers.authorization?.split(" ")[1] || "";
+  console.log(token);
+  const { email, newPassword } = req.body;
+  const payload = { email, newPassword };
+  await AuthServices.resetPassword(payload, token);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Password Reset!",
+    data: null,
+  });
+});
+
 export const AuthControllers = {
   loginUser,
   registerUser,
+  resetPassword,
+  forgotPassword,
 };

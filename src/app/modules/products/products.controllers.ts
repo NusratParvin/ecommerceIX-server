@@ -39,6 +39,22 @@ const getProductById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getProductsByCategory = catchAsync(
+  async (req: Request, res: Response) => {
+    const { categoryId } = req.params;
+    const result = await ProductServices.getProductsByCategoryIdFromDB(
+      categoryId
+    );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Products retrieved successfully!",
+      data: result,
+    });
+  }
+);
+
 const updateProduct = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   // console.log(id, "jhsdjhkjfhjk");
@@ -79,6 +95,7 @@ const getAllProducts = catchAsync(async (req: Request, res: Response) => {
   const filters = {
     minPrice: req.query.minPrice ? Number(req.query.minPrice) : null,
     maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : null,
+    rating: req.query.rating ? Number(req.query.rating) : null,
     category:
       req.query.category === "null" ? null : (req.query.category as string),
     shop: req.query.shop === "null" ? null : (req.query.shop as string),
@@ -127,15 +144,15 @@ const getAllProductsForAdmin = catchAsync(
 
 const getAllProductsForVendor = catchAsync(
   async (req: Request, res: Response) => {
-    const id = req.user.id;
-    // console.log(id);
+    const email = req.user.email;
+    console.log(email);
     const filters = pick(req.query, productFilterableFields);
     const options = pick(req.query, paginationFields);
 
     const result = await ProductServices.getAllProductsForVendorFromDB(
       filters,
       options,
-      id
+      email
     );
     sendResponse(res, {
       statusCode: StatusCodes.OK,
@@ -176,7 +193,7 @@ const getFlashSaleProducts = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Flas sale Products retrieved successfully!",
+    message: "Flash sale Products retrieved successfully!",
     meta: result.meta,
     data: result.data,
   });
@@ -187,6 +204,7 @@ export const ProductControllers = {
   getFlashSaleProducts,
   createProduct,
   getProductById,
+  getProductsByCategory,
   getAllProductsForAdmin,
   getAllProductsForVendor,
   updateProduct,

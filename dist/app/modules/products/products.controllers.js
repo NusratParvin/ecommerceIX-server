@@ -48,6 +48,16 @@ const getProductById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
         data: result,
     });
 }));
+const getProductsByCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { categoryId } = req.params;
+    const result = yield products_services_1.ProductServices.getProductsByCategoryIdFromDB(categoryId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Products retrieved successfully!",
+        data: result,
+    });
+}));
 const updateProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     // console.log(id, "jhsdjhkjfhjk");
@@ -82,28 +92,25 @@ const deleteProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
     });
 }));
 const getAllProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // Parse and validate filters
     const filters = {
         minPrice: req.query.minPrice ? Number(req.query.minPrice) : null,
         maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : null,
+        rating: req.query.rating ? Number(req.query.rating) : null,
         category: req.query.category === "null" ? null : req.query.category,
         shop: req.query.shop === "null" ? null : req.query.shop,
         search: req.query.search ? String(req.query.search) : "",
     };
-    // Parse and validate pagination and sorting options
     const options = {
         page: req.query.page ? Number(req.query.page) : 1,
         limit: req.query.limit ? Number(req.query.limit) : 8,
         sortBy: req.query.sortBy ? String(req.query.sortBy) : "createdAt",
         sortOrder: req.query.sortOrder ? String(req.query.sortOrder) : "desc",
     };
-    // Debug logs for parsed filters and options
     console.log("Filters:", filters);
     console.log("Options:", options);
-    // Call the service function
     const result = yield products_services_1.ProductServices.getAllProductsFromDB(filters, options);
-    // Return response
-    res.status(200).json({
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
         message: "Products retrieved successfully!",
         meta: result.meta,
@@ -123,11 +130,11 @@ const getAllProductsForAdmin = (0, catchAsync_1.default)((req, res) => __awaiter
     });
 }));
 const getAllProductsForVendor = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = req.user.id;
-    // console.log(id);
+    const email = req.user.email;
+    console.log(email);
     const filters = (0, pick_1.default)(req.query, productFilterableFields);
     const options = (0, pick_1.default)(req.query, paginationFields);
-    const result = yield products_services_1.ProductServices.getAllProductsForVendorFromDB(filters, options, id);
+    const result = yield products_services_1.ProductServices.getAllProductsForVendorFromDB(filters, options, email);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
@@ -136,10 +143,38 @@ const getAllProductsForVendor = (0, catchAsync_1.default)((req, res) => __awaite
         data: result.data,
     });
 }));
+const getFlashSaleProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("in flash");
+    const filters = {
+        minPrice: req.query.minPrice ? Number(req.query.minPrice) : null,
+        maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : null,
+        category: req.query.category === "null" ? null : req.query.category,
+        shop: req.query.shop === "null" ? null : req.query.shop,
+        search: req.query.search ? String(req.query.search) : "",
+    };
+    const options = {
+        page: req.query.page ? Number(req.query.page) : 1,
+        limit: req.query.limit ? Number(req.query.limit) : 8,
+        sortBy: req.query.sortBy ? String(req.query.sortBy) : "createdAt",
+        sortOrder: req.query.sortOrder ? String(req.query.sortOrder) : "desc",
+    };
+    console.log("Filters flash:", filters);
+    console.log("Options:", options);
+    const result = yield products_services_1.ProductServices.getFlashSaleProductsFromDB(filters, options);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Flash sale Products retrieved successfully!",
+        meta: result.meta,
+        data: result.data,
+    });
+}));
 exports.ProductControllers = {
     getAllProducts,
+    getFlashSaleProducts,
     createProduct,
     getProductById,
+    getProductsByCategory,
     getAllProductsForAdmin,
     getAllProductsForVendor,
     updateProduct,

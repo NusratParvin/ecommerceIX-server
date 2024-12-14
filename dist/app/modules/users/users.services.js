@@ -74,6 +74,21 @@ const getUserByIdFromDB = (id) => __awaiter(void 0, void 0, void 0, function* ()
         throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
     return user;
 });
+// Get a single user by Email
+const getUserByEmailFromDB = (userEmail) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield prisma.user.findFirst({
+        where: { email: userEmail },
+        include: {
+            shops: true,
+            orders: true,
+            reviews: true,
+            followedShops: true,
+        },
+    });
+    if (!user)
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
+    return user;
+});
 const updateUserStatusIntoDB = (id, status) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield prisma.user.findUnique({ where: { id } });
     if (!user) {
@@ -109,6 +124,7 @@ const deleteUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.UserServices = {
     getUserByIdFromDB,
+    getUserByEmailFromDB,
     getAllUsersFromDB,
     updateUserStatusIntoDB,
     updateUserRoleIntoDB,

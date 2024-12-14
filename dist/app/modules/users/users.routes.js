@@ -10,6 +10,7 @@ const auth_1 = __importDefault(require("../../middlewares/auth"));
 const client_1 = require("@prisma/client");
 const router = express_1.default.Router();
 router.get("/", (0, auth_1.default)(client_1.UserRole.ADMIN), users_controllers_1.UserControllers.getAllUsers);
+router.get("/get/:userEmail", users_controllers_1.UserControllers.getUserByEmail);
 router.get("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN), users_controllers_1.UserControllers.getUserById);
 router.patch("/:id/status", (0, auth_1.default)(client_1.UserRole.ADMIN), users_controllers_1.UserControllers.updateUserStatus);
 router.patch("/:id/role", (0, auth_1.default)(client_1.UserRole.ADMIN), users_controllers_1.UserControllers.updateUserRole);

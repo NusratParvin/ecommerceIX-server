@@ -37,4 +37,7 @@ router.get("/getShops", shops_controllers_1.ShopControllers.getAllShopsForAll);
 router.patch("/:id/status", shops_controllers_1.ShopControllers.updateShopStatus);
 router.get("/myShop", (0, auth_1.default)(client_1.UserRole.VENDOR), shops_controllers_1.ShopControllers.getMyShop);
 router.get("/followedShops", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.USER, client_1.UserRole.VENDOR), shops_controllers_1.ShopControllers.fetchFollowedShops);
+router.get("/:shopId", shops_controllers_1.ShopControllers.getShopDetails);
+router.post("/follow/:shopId", (0, auth_1.default)(client_1.UserRole.USER, client_1.UserRole.VENDOR, client_1.UserRole.ADMIN), shops_controllers_1.ShopControllers.followShop);
+router.post("/unfollow/:shopId", (0, auth_1.default)(client_1.UserRole.USER, client_1.UserRole.VENDOR, client_1.UserRole.ADMIN), shops_controllers_1.ShopControllers.unfollowShop);
 exports.ShopsRouters = router;

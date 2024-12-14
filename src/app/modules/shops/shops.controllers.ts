@@ -106,6 +106,47 @@ const fetchFollowedShops = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const followShop = catchAsync(async (req: Request, res: Response) => {
+  const { userEmail } = req.user.email;
+  const { shopId } = req.params;
+
+  const result = await ShopServices.followShopIntoDB(userEmail, shopId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shop followed successfully!",
+    data: result,
+  });
+});
+
+const unfollowShop = catchAsync(async (req: Request, res: Response) => {
+  const { shopId } = req.params;
+  const { userEmail } = req.user.email;
+
+  const result = await ShopServices.unfollowShopIntoDB(userEmail, shopId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shop unfollowed successfully!",
+    data: result,
+  });
+});
+
+const getShopDetails = catchAsync(async (req: Request, res: Response) => {
+  const { shopId } = req.params;
+
+  const result = await ShopServices.getShopDetailsFromDB(shopId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Shop details retrieved successfully!",
+    data: result,
+  });
+});
+
 export const ShopControllers = {
   createShop,
   getAllShops,
@@ -114,4 +155,7 @@ export const ShopControllers = {
   updateShop,
   updateShopStatus,
   fetchFollowedShops,
+  getShopDetails,
+  followShop,
+  unfollowShop,
 };

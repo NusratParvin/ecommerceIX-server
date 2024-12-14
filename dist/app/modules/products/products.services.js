@@ -57,6 +57,17 @@ const getProductByIdFromDB = (id) => __awaiter(void 0, void 0, void 0, function*
         },
     });
 });
+const getProductsByCategoryIdFromDB = (categoryId) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.product.findMany({
+        where: { categoryId },
+        include: {
+            shop: true,
+            reviews: true,
+        },
+    });
+    // console.log(result, categoryId, "categoryyyyyyyyyyy");
+    return result;
+});
 const updateProductIntoDB = (id, req) => __awaiter(void 0, void 0, void 0, function* () {
     const payload = req.body;
     const productExists = yield prisma_1.default.product.findUnique({
@@ -102,125 +113,124 @@ const deleteProductFromDB = (id) => __awaiter(void 0, void 0, void 0, function* 
 //     sortOrder?: string;
 //   }
 // ) => {
-//   const { page, limit, skip, sortBy, sortOrder } =
-//     pagination.calculatePagination(options);
-//   // console.log("first");
-//   const where: any = {
+//   const { page, limit, skip } = pagination.calculatePagination(options);
+//   // console.log("Filters received:", filters);
+//   const where: Record<string, any> = {
 //     isDeleted: false,
 //     status: "ACTIVE",
 //     stock: { gt: 0 },
 //   };
-//   // Add search term filtering if applicable
-//   if (filters.searchTerm) {
-//     where.name = { contains: filters.searchTerm, mode: "insensitive" };
-//   }
-//   // Add other filters dynamically if necessary
-//   if (filters.minPrice) {
-//     where.price = { gte: filters.minPrice };
-//   }
-//   if (filters.maxPrice) {
-//     where.price = { ...(where.price || {}), lte: filters.maxPrice };
+//   if (filters.search) {
+//     where.OR = [
+//       { name: { contains: filters.search, mode: "insensitive" } },
+//       { description: { contains: filters.search, mode: "insensitive" } },
+//     ];
 //   }
 //   if (filters.category) {
 //     where.categoryId = filters.category;
 //   }
-//   if (filters.searchTerm) {
-//     where.name = { contains: filters.searchTerm, mode: "insensitive" };
+//   if (filters.shop) {
+//     where.shopId = filters.shop;
 //   }
-//   // Fetch data and total count
+//   if (filters.minPrice !== null || filters.maxPrice !== null) {
+//     where.price = {};
+//     console.log("sabdsfnsmNasmnnmdnsfdmssbdamndbm");
+//     if (filters.minPrice !== null) where.price.gte = filters.minPrice;
+//     if (filters.maxPrice !== null) where.price.lte = filters.maxPrice;
+//   }
+//   if (filters.rating !== null) {
+//     where.rating = {};
+//     if (filters.rating !== null) where.rating.lte = filters.rating;
+//   }
+//   console.log("Final Prisma `where` clause:", where);
 //   const [data, total] = await Promise.all([
 //     prisma.product.findMany({
 //       where,
 //       skip,
 //       take: limit,
-//       orderBy: { [sortBy || "createdAt"]: sortOrder || "asc" },
+//       orderBy: {
+//         [options.sortBy || "createdAt"]: options.sortOrder || "desc",
+//       },
 //       include: {
 //         shop: true,
 //         category: true,
+//         OrderItem: true,
+//         reviews: true,
 //       },
 //     }),
-//     prisma.product.count({
-//       where: where,
-//     }),
+//     prisma.product.count({ where }),
 //   ]);
+//   const hasNextPage = skip + data.length < total;
+//   console.log("Total products:", total, "Has next page:", hasNextPage);
 //   return {
 //     meta: {
 //       total,
 //       page,
 //       limit,
+//       hasNextPage,
 //     },
 //     data,
 //   };
 // };
 const getAllProductsFromDB = (filters, options) => __awaiter(void 0, void 0, void 0, function* () {
-    // Calculate pagination details
     const { page, limit, skip } = pagination_1.pagination.calculatePagination(options);
-    console.log("Filters received:", filters);
-    // Define base `where` clause for Prisma
+    // Simplified initial where clause
     const where = {
         isDeleted: false,
         status: "ACTIVE",
         stock: { gt: 0 },
     };
-    // Apply search filter
+    // Include search filters
     if (filters.search) {
         where.OR = [
             { name: { contains: filters.search, mode: "insensitive" } },
             { description: { contains: filters.search, mode: "insensitive" } },
         ];
     }
-    // Apply category filter
     if (filters.category) {
         where.categoryId = filters.category;
     }
-    // Apply shop filter
     if (filters.shop) {
         where.shopId = filters.shop;
     }
-    // Apply price range filter
-    if (filters.minPrice !== null || filters.maxPrice !== null) {
-        where.price = {};
-        if (filters.minPrice !== null)
-            where.price.gte = filters.minPrice;
-        if (filters.maxPrice !== null)
-            where.price.lte = filters.maxPrice;
+    if (filters.rating) {
+        where.rating = { lte: filters.rating };
     }
-    console.log("Final Prisma `where` clause:", where);
-    try {
-        // Fetch products and total count in parallel
-        const [data, total] = yield Promise.all([
-            prisma_1.default.product.findMany({
-                where,
-                skip,
-                take: limit,
-                orderBy: {
-                    [options.sortBy || "createdAt"]: options.sortOrder || "desc",
-                },
-                include: {
-                    shop: true,
-                    category: true,
-                    OrderItem: true,
-                    reviews: true,
-                },
-            }),
-            prisma_1.default.product.count({ where }),
-        ]);
-        const hasNextPage = skip + data.length < total;
-        console.log("Total products:", total, "Has next page:", hasNextPage);
-        return {
-            meta: {
-                total,
-                page,
-                limit,
-                hasNextPage,
-            },
-            data,
-        };
-    }
-    catch (error) {
-        console.error("Error fetching products:", error);
-        throw new Error("Failed to fetch products from the database");
-    }
+    // Fetch products potentially within price range but do not apply price filters yet
+    const products = yield prisma_1.default.product.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+            [options.sortBy || "createdAt"]: options.sortOrder || "desc",
+        },
+        include: {
+            shop: true,
+            category: true,
+            OrderItem: true,
+            reviews: true,
+        },
+    });
+    // Further filter products based on complex price logic
+    const filteredProducts = products.filter((product) => {
+        const effectivePrice = product.flashSalePrice ||
+            (product.discount
+                ? product.price * (1 - product.discount / 100)
+                : product.price);
+        return ((!filters.minPrice || effectivePrice >= filters.minPrice) &&
+            (!filters.maxPrice || effectivePrice <= filters.maxPrice));
+    });
+    const total = filteredProducts.length;
+    const hasNextPage = skip + limit < total;
+    return {
+        meta: {
+            total,
+            page,
+            limit,
+            hasNextPage,
+        },
+        data: filteredProducts,
+    };
 });
 const getAllProductsForAdminFromDB = (filters, options) => __awaiter(void 0, void 0, void 0, function* () {
     const { page, limit, skip, sortBy, sortOrder } = pagination_1.pagination.calculatePagination(options);
@@ -248,21 +258,34 @@ const getAllProductsForAdminFromDB = (filters, options) => __awaiter(void 0, voi
         data,
     };
 });
-const getAllProductsForVendorFromDB = (filters, options, id) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllProductsForVendorFromDB = (filters, options, email) => __awaiter(void 0, void 0, void 0, function* () {
     const { page, limit, skip, sortBy, sortOrder } = pagination_1.pagination.calculatePagination(options);
-    const shop = yield prisma_1.default.shop.findFirst({
+    const user = yield prisma_1.default.user.findFirst({
         where: {
-            ownerId: id,
+            email: email,
         },
     });
-    const where = {};
+    if (!user)
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
+    const shop = yield prisma_1.default.shop.findFirst({
+        where: {
+            ownerId: user.id,
+        },
+    });
+    if (!shop)
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Shop not found");
+    console.log(email, shop);
+    // const where: any = {};
+    const where = {
+        shopId: shop.id,
+    };
     if (filters.searchTerm) {
         where.name = { contains: filters.searchTerm, mode: "insensitive" };
     }
     // Add shopId filter if provided
-    if (filters.shopId) {
-        where.shopId = filters.shopId;
-    }
+    // if (filters.shopId) {
+    //   where.shopId = filters.shopId;
+    // }
     // Add shop status filter if provided
     // if (filters.shopStatus) {
     //   where.shop = { status: ShopStatus.ACTIVE };
@@ -288,13 +311,73 @@ const getAllProductsForVendorFromDB = (filters, options, id) => __awaiter(void 0
         data,
     };
 });
+const getFlashSaleProductsFromDB = (filters, options) => __awaiter(void 0, void 0, void 0, function* () {
+    const { page, limit, skip } = pagination_1.pagination.calculatePagination(options);
+    const where = {
+        isDeleted: false,
+        status: "ACTIVE",
+        stock: { gt: 0 },
+        isFlashSale: true,
+        flashSaleEndDate: { gte: new Date() },
+    };
+    // Add search filters
+    if (filters.search) {
+        where.OR = [
+            { name: { contains: filters.search, mode: "insensitive" } },
+            { description: { contains: filters.search, mode: "insensitive" } },
+        ];
+    }
+    // Add category filter
+    if (filters.category) {
+        where.categoryId = filters.category;
+    }
+    // Add shop filter
+    if (filters.shop) {
+        where.shopId = filters.shop;
+    }
+    // Add flashSalePrice filter only when maxPrice is not null
+    if (filters.maxPrice !== null) {
+        where.flashSalePrice = { lte: filters.maxPrice };
+    }
+    console.log("Final Prisma flash `where` clause:", where);
+    const [data, total] = yield Promise.all([
+        prisma_1.default.product.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy: {
+                [options.sortBy || "createdAt"]: options.sortOrder || "desc",
+            },
+            include: {
+                shop: true,
+                category: true,
+                OrderItem: true,
+                reviews: true,
+            },
+        }),
+        prisma_1.default.product.count({ where }),
+    ]);
+    const hasNextPage = skip + data.length < total;
+    console.log("Total products:", total, "Has next page:", hasNextPage);
+    return {
+        meta: {
+            total,
+            page,
+            limit,
+            hasNextPage,
+        },
+        data,
+    };
+});
 exports.ProductServices = {
     createProductIntoDB,
     getProductByIdFromDB,
+    getProductsByCategoryIdFromDB,
     updateProductIntoDB,
     updateProductStatusIntoDB,
     deleteProductFromDB,
     getAllProductsFromDB,
     getAllProductsForAdminFromDB,
     getAllProductsForVendorFromDB,
+    getFlashSaleProductsFromDB,
 };

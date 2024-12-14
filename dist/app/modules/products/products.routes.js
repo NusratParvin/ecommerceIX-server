@@ -23,6 +23,8 @@ router.patch("/:id", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserR
 router.patch("/:id/status", (0, auth_1.default)(client_1.UserRole.ADMIN), products_controllers_1.ProductControllers.updateProductStatus);
 router.get("/get", (0, auth_1.default)(client_1.UserRole.ADMIN), products_controllers_1.ProductControllers.getAllProductsForAdmin);
 router.get("/vendor", (0, auth_1.default)(client_1.UserRole.VENDOR), products_controllers_1.ProductControllers.getAllProductsForVendor);
+router.get("/flash-Sale", products_controllers_1.ProductControllers.getFlashSaleProducts);
+router.get("/category/:categoryId", products_controllers_1.ProductControllers.getProductsByCategory);
 router.get("/:id", products_controllers_1.ProductControllers.getProductById);
 router.delete("/:id", products_controllers_1.ProductControllers.deleteProduct);
 router.get("/", products_controllers_1.ProductControllers.getAllProducts);

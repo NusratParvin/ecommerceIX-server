@@ -78,7 +78,33 @@ const registerUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         });
     }
 }));
+const forgotPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // console.log("forgot");
+    yield auth_services_1.AuthServices.forgotPassword(req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Check your email!",
+        data: null,
+    });
+}));
+const resetPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const token = req.headers.authorization || "";
+    // const token = req.headers.authorization?.split(" ")[1] || "";
+    console.log(token);
+    const { email, newPassword } = req.body;
+    const payload = { email, newPassword };
+    yield auth_services_1.AuthServices.resetPassword(payload, token);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Password Reset!",
+        data: null,
+    });
+}));
 exports.AuthControllers = {
     loginUser,
     registerUser,
+    resetPassword,
+    forgotPassword,
 };

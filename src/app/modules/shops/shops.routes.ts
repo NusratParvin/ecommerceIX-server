@@ -55,4 +55,17 @@ router.get(
   ShopControllers.fetchFollowedShops
 );
 
+router.get("/:shopId", ShopControllers.getShopDetails);
+router.post(
+  "/follow/:shopId",
+  auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN),
+  ShopControllers.followShop
+);
+
+router.post(
+  "/unfollow/:shopId",
+  auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN),
+  ShopControllers.unfollowShop
+);
+
 export const ShopsRouters = router;

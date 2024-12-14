@@ -44,6 +44,17 @@ const getUserById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
         data: user,
     });
 }));
+// Get a single user by email
+const getUserByEmail = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userEmail } = req.params;
+    const user = yield users_services_1.UserServices.getUserByEmailFromDB(userEmail);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "User fetched successfully!",
+        data: user,
+    });
+}));
 // Update user status
 const updateUserStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
@@ -84,4 +95,5 @@ exports.UserControllers = {
     updateUserStatus,
     updateUserRole,
     getUserById,
+    getUserByEmail,
 };

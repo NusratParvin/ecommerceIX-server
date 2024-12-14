@@ -173,8 +173,83 @@ const getFollowedShops = (userEmail) => __awaiter(void 0, void 0, void 0, functi
     if (!user) {
         throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
     }
-    // console.log(user.followedShops, "service");
     return user.followedShops;
+});
+const followShopIntoDB = (userEmail, shopId) => __awaiter(void 0, void 0, void 0, function* () {
+    // Verify if the shop exists
+    const shop = yield prisma_1.default.shop.findUnique({
+        where: { id: shopId },
+    });
+    if (!shop) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Shop not found");
+    }
+    // Find user by email
+    const user = yield prisma_1.default.user.findFirst({
+        where: { email: userEmail },
+    });
+    if (!user) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
+    }
+    const userId = user.id;
+    // Check if the follow relation already exists
+    const existingFollower = yield prisma_1.default.shopFollower.findUnique({
+        where: {
+            userId_shopId: { userId, shopId },
+        },
+    });
+    if (existingFollower) {
+        return "Already following the shop";
+    }
+    const follower = yield prisma_1.default.shopFollower.create({
+        data: {
+            userId: userId,
+            shopId: shopId,
+            followedAt: new Date(),
+        },
+    });
+    return follower;
+});
+const unfollowShopIntoDB = (userEmail, shopId) => __awaiter(void 0, void 0, void 0, function* () {
+    const shop = yield prisma_1.default.shop.findUnique({
+        where: { id: shopId },
+    });
+    if (!shop) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Shop not found");
+    }
+    const user = yield prisma_1.default.user.findFirst({
+        where: { email: userEmail },
+    });
+    if (!user) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
+    }
+    const userId = user.id;
+    const followerRecord = yield prisma_1.default.shopFollower.findUnique({
+        where: {
+            userId_shopId: { userId, shopId },
+        },
+    });
+    if (!followerRecord) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Follow record not found");
+    }
+    const follower = yield prisma_1.default.shopFollower.delete({
+        where: {
+            userId_shopId: { userId, shopId },
+        },
+    });
+    return follower;
+});
+const getShopDetailsFromDB = (shopId) => __awaiter(void 0, void 0, void 0, function* () {
+    const shop = yield prisma_1.default.shop.findUnique({
+        where: { id: shopId },
+        include: {
+            products: true,
+            followers: true,
+        },
+    });
+    if (!shop) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Shop not found");
+    }
+    return shop;
 });
 exports.ShopServices = {
     createShopIntoDB,
@@ -184,4 +259,7 @@ exports.ShopServices = {
     getAllShopsForAllFromDB,
     getShopByOwnerFromDB,
     getFollowedShops,
+    unfollowShopIntoDB,
+    followShopIntoDB,
+    getShopDetailsFromDB,
 };

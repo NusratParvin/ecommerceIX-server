@@ -59,10 +59,12 @@ model User {
   password     String
   profilePhoto String?
 
-  role      UserRole     @default(USER)
-  status    ActiveStatus @default(ACTIVE)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt()
+  role   UserRole     @default(USER)
+  status ActiveStatus @default(ACTIVE)
+  // needsPasswordChange Boolean      @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
 
   // Relations
   shops         Shop[]
@@ -120,19 +122,19 @@ model Category {
 }
 
 model Product {
-  id          String        @id @default(uuid())
-  name        String
-  description String?
-  price       Float
-  stock       Int
-  discount    Float?
-  shopId      String
-  categoryId  String
-  imageUrl    String?
-  status      ProductStatus @default(ACTIVE)
-
+  id                 String        @id @default(uuid())
+  name               String
+  description        String?
+  price              Float
+  stock              Int
+  discount           Float?
+  shopId             String
+  categoryId         String
+  imageUrl           String?
+  status             ProductStatus @default(ACTIVE)
+  rating             Float         @default(0)
   // Flash Sale Fields
-  isFlashSale        Boolean   @default(false)
+  isFlashSale        Boolean       @default(false)
   flashSalePrice     Float?
   flashSaleStartDate DateTime?
   flashSaleEndDate   DateTime?

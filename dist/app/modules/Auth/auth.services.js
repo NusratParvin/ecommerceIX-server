@@ -21,6 +21,7 @@ const config_1 = __importDefault(require("../../../config"));
 const uploadImageToCloudinary_1 = require("../../../helpers/uploadImageToCloudinary");
 const http_status_codes_1 = require("http-status-codes");
 const apiErrors_1 = __importDefault(require("../../errors/apiErrors"));
+const sendEmail_1 = require("../../../helpers/sendEmail");
 const loginUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userExists = yield prisma_1.default.user.findUniqueOrThrow({
@@ -51,26 +52,7 @@ const loginUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function*
         throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Invalid credential!");
     }
 });
-// const registerUserIntoDB = async (req: Request): Promise<User> => {
-//   const userExists = await prisma.user.findUnique({
-//     where: { email: req.body.email, status: ActiveStatus.ACTIVE },
-//   });
-//   if (userExists)
-//     throw new ApiError(StatusCodes.UNAUTHORIZED, "Email is in use");
-//   const file = req.file as TFile;
-//   if (file) {
-//     const uploadToCloudinary = await fileUploader.uploadImageToCloudinary(file);
-//     req.body.profilePhoto = uploadToCloudinary?.secure_url;
-//   }
-//   const hashedPassword = await bcrypt.hash(req.body.password, 12);
-//   req.body.password = hashedPassword;
-//   const result = await prisma.user.create({
-//     data: req.body,
-//   });
-//   return result;
-// };
 const registerUserIntoDB = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    // Check if the email is already in use
     const userExists = yield prisma_1.default.user.findUnique({
         where: { email: req.body.email, status: client_1.ActiveStatus.ACTIVE },
     });
@@ -89,6 +71,10 @@ const registerUserIntoDB = (req) => __awaiter(void 0, void 0, void 0, function* 
     // Create the user in the database
     const user = yield prisma_1.default.user.create({
         data: req.body,
+        // data: {
+        //   ...req.body,
+        //   needsPasswordChange: true,
+        // },
     });
     // Generate token if the user is a VENDOR
     let token;
@@ -102,7 +88,54 @@ const registerUserIntoDB = (req) => __awaiter(void 0, void 0, void 0, function* 
     }
     return { user, token };
 });
+const forgotPassword = (_a) => __awaiter(void 0, [_a], void 0, function* ({ email }) {
+    console.log(email);
+    const user = yield prisma_1.default.user.findFirst({
+        where: {
+            email: email,
+            status: "ACTIVE",
+        },
+    });
+    console.log(user);
+    if (!user) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "This user is not found!");
+    }
+    const resetToken = jwtToken_1.jwtToken.generateToken({
+        email: user.email,
+        role: user.role,
+        name: user.name,
+        profilePhoto: user.profilePhoto,
+    }, config_1.default.jwt.access_token_secret, "10m");
+    const resetUILink = `${config_1.default.reset_pass_ui_link}/reset-password?id=${user.id}&token=${resetToken}`;
+    yield (0, sendEmail_1.sendEmail)(user.email, resetUILink);
+});
+const resetPassword = (payload, token) => __awaiter(void 0, void 0, void 0, function* () {
+    const userData = yield prisma_1.default.user.findUniqueOrThrow({
+        where: {
+            email: payload.email,
+            status: client_1.ActiveStatus.ACTIVE,
+        },
+    });
+    if (!userData) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "This user is not found!");
+    }
+    const isValidToken = jwtToken_1.jwtToken.verifyToken(token, config_1.default.jwt.access_token_secret);
+    if (!isValidToken) {
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, "Forbidden!");
+    }
+    const newHashedPassword = yield bcrypt_1.default.hash(payload.newPassword, 12);
+    // Update user's password
+    const updatedUser = yield prisma_1.default.user.update({
+        where: { id: userData.id },
+        data: {
+            password: newHashedPassword,
+        },
+    });
+    return updatedUser;
+});
 exports.AuthServices = {
     loginUserIntoDB,
     registerUserIntoDB,
+    forgotPassword,
+    resetPassword,
 };

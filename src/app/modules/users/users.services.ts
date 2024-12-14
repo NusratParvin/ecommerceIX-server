@@ -77,6 +77,21 @@ const getUserByIdFromDB = async (id: string) => {
   return user;
 };
 
+// Get a single user by Email
+const getUserByEmailFromDB = async (userEmail: string) => {
+  const user = await prisma.user.findFirst({
+    where: { email: userEmail },
+    include: {
+      shops: true,
+      orders: true,
+      reviews: true,
+      followedShops: true,
+    },
+  });
+  if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  return user;
+};
+
 const updateUserStatusIntoDB = async (id: string, status: ActiveStatus) => {
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) {
@@ -120,6 +135,7 @@ const deleteUserFromDB = async (id: string) => {
 
 export const UserServices = {
   getUserByIdFromDB,
+  getUserByEmailFromDB,
   getAllUsersFromDB,
   updateUserStatusIntoDB,
   updateUserRoleIntoDB,
