@@ -28,6 +28,7 @@ const auth_services_1 = require("./auth.services");
 //   });
 // });
 const loginUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("login");
     const result = yield auth_services_1.AuthServices.loginUserIntoDB(req.body);
     const { refreshToken, accessToken } = result;
     res.cookie("refreshToken", refreshToken, {

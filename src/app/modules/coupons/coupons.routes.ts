@@ -7,7 +7,8 @@ const router = express.Router();
 
 router.post("/", auth(UserRole.ADMIN), CouponsControllers.createCoupon);
 router.get("/:id", auth(UserRole.ADMIN), CouponsControllers.getCouponById);
-router.get("/", auth(UserRole.ADMIN), CouponsControllers.getAllCoupons);
+router.get("/", CouponsControllers.getAllCoupons);
+router.post("/apply-coupon", CouponsControllers.applyCoupon);
 
 router.patch("/:id", auth(UserRole.ADMIN), CouponsControllers.updateCoupon);
 router.delete("/:id", auth(UserRole.ADMIN), CouponsControllers.deleteCoupon);

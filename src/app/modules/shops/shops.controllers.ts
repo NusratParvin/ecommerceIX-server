@@ -107,7 +107,7 @@ const fetchFollowedShops = catchAsync(async (req: Request, res: Response) => {
 });
 
 const followShop = catchAsync(async (req: Request, res: Response) => {
-  const { userEmail } = req.user.email;
+  const userEmail = req.user.email;
   const { shopId } = req.params;
 
   const result = await ShopServices.followShopIntoDB(userEmail, shopId);

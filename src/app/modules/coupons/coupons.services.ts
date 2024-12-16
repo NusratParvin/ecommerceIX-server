@@ -40,7 +40,7 @@ const getAllCouponsFromDB = async () => {
 };
 
 // Service to update a coupon
-const updateCouponInDB = async (id, data) => {
+const updateCouponInDB = async (id: string, data: Partial<Coupon>) => {
   const { code, discountAmount, expirationDate } = data;
 
   // Ensure the expirationDate is in full ISO-8601 format
@@ -80,10 +80,24 @@ const deleteCouponInDB = async (id: string) => {
   }
 };
 
+const applyCouponIntoDB = async (code: string) => {
+  const coupon = await prisma.coupon.findUnique({
+    where: { code },
+    // select: { discountAmount: true, expirationDate: true },
+  });
+
+  if (!coupon) throw new Error("Coupon not found");
+  if (new Date() > coupon.expirationDate)
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Coupon has expired");
+
+  return coupon;
+};
+
 export const CouponsServices = {
   getAllCouponsFromDB,
   getCouponByIdFromDB,
   createCouponInDB,
   deleteCouponInDB,
   updateCouponInDB,
+  applyCouponIntoDB,
 };

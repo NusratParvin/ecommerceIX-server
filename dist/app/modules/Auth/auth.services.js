@@ -23,7 +23,11 @@ const http_status_codes_1 = require("http-status-codes");
 const apiErrors_1 = __importDefault(require("../../errors/apiErrors"));
 const sendEmail_1 = require("../../../helpers/sendEmail");
 const loginUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(payload.email, payload.password);
+    const ok = yield prisma_1.default.user.findMany();
+    console.log(ok, "user");
     try {
+        console.log("object");
         const userExists = yield prisma_1.default.user.findUniqueOrThrow({
             where: { email: payload.email, status: client_1.ActiveStatus.ACTIVE },
         });

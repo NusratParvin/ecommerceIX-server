@@ -9,6 +9,9 @@ const categories_routes_1 = require("../modules/categories/categories.routes");
 const products_routes_1 = require("../modules/products/products.routes");
 const shops_routes_1 = require("../modules/shops/shops.routes");
 const users_routes_1 = require("../modules/users/users.routes");
+const coupons_routes_1 = require("../modules/coupons/coupons.routes");
+const payments_routes_1 = require("../modules/payments/payments.routes");
+const orders_routes_1 = require("../modules/orders/orders.routes");
 const router = express_1.default.Router();
 const moduleRoutes = [
     { path: "/auth", route: auth_routes_1.AuthRoutes },
@@ -16,6 +19,9 @@ const moduleRoutes = [
     { path: "/products", route: products_routes_1.ProductRoutes },
     { path: "/shops", route: shops_routes_1.ShopsRouters },
     { path: "/users", route: users_routes_1.UsersRoutes },
+    { path: "/coupons", route: coupons_routes_1.CouponsRouters },
+    { path: "/payments", route: payments_routes_1.PaymentsRoutes },
+    { path: "/orders", route: orders_routes_1.OrdersRoutes },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 exports.default = router;

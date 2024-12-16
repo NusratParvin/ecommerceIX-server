@@ -76,24 +76,6 @@ model User {
   @@map("user")
 }
 
-model Shop {
-  id          String     @id @default(uuid())
-  name        String
-  description String
-  logo        String?
-  ownerId     String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt()
-  status      ShopStatus @default(ACTIVE)
-
-  // Relations
-  owner     User           @relation(fields: [ownerId], references: [id])
-  products  Product[]
-  followers ShopFollower[]
-
-  @@map("shop")
-}
-
 model ShopFollower {
   userId     String
   shopId     String
@@ -155,14 +137,18 @@ model Product {
 model Order {
   id            String        @id @default(uuid())
   userId        String
+  shopId        String
   totalPrice    Float
   paymentStatus PaymentStatus
   paymentMethod String
   couponId      String?
+  shippingInfo  Json
   createdAt     DateTime      @default(now())
 
   // Relations
-  user        User          @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  shop Shop @relation(fields: [shopId], references: [id])
+
   coupon      Coupon?       @relation(fields: [couponId], references: [id])
   items       OrderItem[]
   Transaction Transaction[]
@@ -182,6 +168,25 @@ model OrderItem {
   product Product @relation(fields: [productId], references: [id])
 
   @@map("orderItem")
+}
+
+model Shop {
+  id          String     @id @default(uuid())
+  name        String
+  description String
+  logo        String?
+  ownerId     String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt()
+  status      ShopStatus @default(ACTIVE)
+
+  // Relations
+  owner     User           @relation(fields: [ownerId], references: [id])
+  products  Product[]
+  followers ShopFollower[]
+  Order     Order[]
+
+  @@map("shop")
 }
 
 model Review {
@@ -214,15 +219,16 @@ model Coupon {
 }
 
 model Transaction {
-  id            String          @id @default(uuid())
-  orderId       String?
-  userId        String
-  amount        Float
-  paymentMethod String
-  paymentStatus PaymentStatus
-  type          TransactionType
-  createdAt     DateTime        @default(now())
-  description   String?
+  id                    String          @id @default(uuid())
+  orderId               String?
+  userId                String
+  amount                Float
+  paymentMethod         String
+  paymentStatus         PaymentStatus
+  type                  TransactionType
+  stripePaymentIntentId String
+  createdAt             DateTime        @default(now())
+  description           String?
 
   // Relations
   order Order? @relation(fields: [orderId], references: [id])

@@ -172,15 +172,144 @@ const deleteProductFromDB = (id) => __awaiter(void 0, void 0, void 0, function* 
 //     data,
 //   };
 // };
+// const getAllProductsFromDB = async (
+//   filters: Record<string, any>,
+//   options: {
+//     page?: number;
+//     limit?: number;
+//     sortBy?: string;
+//     sortOrder?: string;
+//   }
+// ) => {
+//   const { page = 1, limit = 8 } = options;
+//   const skip = (page - 1) * limit;
+//   const where: Record<string, any> = {
+//     isDeleted: false,
+//     status: "ACTIVE",
+//     stock: { gt: 0 },
+//   };
+//   if (filters.search) {
+//     where.OR = [
+//       { name: { contains: filters.search, mode: "insensitive" } },
+//       { description: { contains: filters.search, mode: "insensitive" } },
+//     ];
+//   }
+//   if (filters.category) {
+//     where.categoryId = filters.category;
+//   }
+//   if (filters.shop) {
+//     where.shopId = filters.shop;
+//   }
+//   const products = await prisma.product.findMany({
+//     where,
+//     skip,
+//     take: limit,
+//     orderBy: {
+//       [options.sortBy || "createdAt"]: options.sortOrder || "desc",
+//     },
+//   });
+//   // Further filter products if necessary
+//   const filteredProducts = products.filter((product) => {
+//     const effectivePrice =
+//       product.flashSalePrice ||
+//       (product.discount
+//         ? product.price * (1 - product.discount / 100)
+//         : product.price);
+//     return (
+//       (!filters.minPrice || effectivePrice >= filters.minPrice) &&
+//       (!filters.maxPrice || effectivePrice <= filters.maxPrice)
+//     );
+//   });
+//   const total = await prisma.product.count({ where });
+//   const hasNextPage = skip + limit < total;
+//   return {
+//     meta: {
+//       total,
+//       page,
+//       limit,
+//       hasNextPage,
+//     },
+//     data: filteredProducts,
+//   };
+// };
+// const getAllProductsFromDB = async (
+//   filters: Record<string, any>,
+//   options: {
+//     page?: number;
+//     limit?: number;
+//     sortBy?: string;
+//     sortOrder?: string;
+//   }
+// ) => {
+//   const { page, limit, skip } = pagination.calculatePagination(options);
+//   // Simplified initial where clause
+//   const where: Record<string, any> = {
+//     isDeleted: false,
+//     status: "ACTIVE",
+//     stock: { gt: 0 },
+//   };
+//   // Include search filters
+//   if (filters.search) {
+//     where.OR = [
+//       { name: { contains: filters.search, mode: "insensitive" } },
+//       { description: { contains: filters.search, mode: "insensitive" } },
+//     ];
+//   }
+//   if (filters.category) {
+//     where.categoryId = filters.category;
+//   }
+//   if (filters.shop) {
+//     where.shopId = filters.shop;
+//   }
+//   if (filters.rating) {
+//     where.rating = { lte: filters.rating };
+//   }
+//    const products = await prisma.product.findMany({
+//     where,
+//     skip,
+//     take: limit,
+//     orderBy: {
+//       [options.sortBy || "createdAt"]: options.sortOrder || "desc",
+//     },
+//     include: {
+//       shop: true,
+//       category: true,
+//       OrderItem: true,
+//       reviews: true,
+//     },
+//   });
+//   // Further filter products based on complex price logic
+//   const filteredProducts = products.filter((product) => {
+//     const effectivePrice =
+//       product.flashSalePrice ||
+//       (product.discount
+//         ? product.price * (1 - product.discount / 100)
+//         : product.price);
+//     return (
+//       (!filters.minPrice || effectivePrice >= filters.minPrice) &&
+//       (!filters.maxPrice || effectivePrice <= filters.maxPrice)
+//     );
+//   });
+//   const total = filteredProducts.length;
+//   const hasNextPage = skip + limit < total;
+//   return {
+//     meta: {
+//       total,
+//       page,
+//       limit,
+//       hasNextPage,
+//     },
+//     data: filteredProducts,
+//   };
+// };
 const getAllProductsFromDB = (filters, options) => __awaiter(void 0, void 0, void 0, function* () {
-    const { page, limit, skip } = pagination_1.pagination.calculatePagination(options);
-    // Simplified initial where clause
+    const { page = 1, limit = 8 } = options;
+    const skip = (page - 1) * limit;
     const where = {
         isDeleted: false,
         status: "ACTIVE",
         stock: { gt: 0 },
     };
-    // Include search filters
     if (filters.search) {
         where.OR = [
             { name: { contains: filters.search, mode: "insensitive" } },
@@ -193,10 +322,6 @@ const getAllProductsFromDB = (filters, options) => __awaiter(void 0, void 0, voi
     if (filters.shop) {
         where.shopId = filters.shop;
     }
-    if (filters.rating) {
-        where.rating = { lte: filters.rating };
-    }
-    // Fetch products potentially within price range but do not apply price filters yet
     const products = yield prisma_1.default.product.findMany({
         where,
         skip,
@@ -211,7 +336,7 @@ const getAllProductsFromDB = (filters, options) => __awaiter(void 0, void 0, voi
             reviews: true,
         },
     });
-    // Further filter products based on complex price logic
+    // Further filter products if necessary
     const filteredProducts = products.filter((product) => {
         const effectivePrice = product.flashSalePrice ||
             (product.discount
@@ -220,7 +345,7 @@ const getAllProductsFromDB = (filters, options) => __awaiter(void 0, void 0, voi
         return ((!filters.minPrice || effectivePrice >= filters.minPrice) &&
             (!filters.maxPrice || effectivePrice <= filters.maxPrice));
     });
-    const total = filteredProducts.length;
+    const total = yield prisma_1.default.product.count({ where });
     const hasNextPage = skip + limit < total;
     return {
         meta: {
@@ -311,8 +436,74 @@ const getAllProductsForVendorFromDB = (filters, options, email) => __awaiter(voi
         data,
     };
 });
+// const getFlashSaleProductsFromDB = async (
+//   filters: Record<string, any>,
+//   options: {
+//     page?: number;
+//     limit?: number;
+//     sortBy?: string;
+//     sortOrder?: string;
+//   }
+// ) => {
+//   const { page, limit, skip } = pagination.calculatePagination(options);
+//   const where: Record<string, any> = {
+//     isDeleted: false,
+//     status: "ACTIVE",
+//     stock: { gt: 0 },
+//     isFlashSale: true,
+//     flashSaleEndDate: { gte: new Date() },
+//   };
+//   // Add search filters
+//   if (filters.search) {
+//     where.OR = [
+//       { name: { contains: filters.search, mode: "insensitive" } },
+//       { description: { contains: filters.search, mode: "insensitive" } },
+//     ];
+//   }
+//   // Add category filter
+//   if (filters.category) {
+//     where.categoryId = filters.category;
+//   }
+//   // Add shop filter
+//   if (filters.shop) {
+//     where.shopId = filters.shop;
+//   }
+//   // Add flashSalePrice filter only when maxPrice is not null
+//   if (filters.maxPrice !== null) {
+//     where.flashSalePrice = { lte: filters.maxPrice };
+//   }
+//   console.log("Final Prisma flash `where` clause:", where);
+//   const [data, total] = await Promise.all([
+//     prisma.product.findMany({
+//       where,
+//       skip,
+//       take: limit,
+//       orderBy: {
+//         [options.sortBy || "createdAt"]: options.sortOrder || "desc",
+//       },
+//       include: {
+//         shop: true,
+//         category: true,
+//         OrderItem: true,
+//         reviews: true,
+//       },
+//     }),
+//     prisma.product.count({ where }),
+//   ]);
+//   const hasNextPage = skip + data.length < total;
+//   console.log("Total products:", total, "Has next page:", hasNextPage);
+//   return {
+//     meta: {
+//       total,
+//       page,
+//       limit,
+//       hasNextPage,
+//     },
+//     data,
+//   };
+// };
 const getFlashSaleProductsFromDB = (filters, options) => __awaiter(void 0, void 0, void 0, function* () {
-    const { page, limit, skip } = pagination_1.pagination.calculatePagination(options);
+    const { page, limit, skip, sortBy, sortOrder } = pagination_1.pagination.calculatePagination(options);
     const where = {
         isDeleted: false,
         status: "ACTIVE",
@@ -320,45 +511,39 @@ const getFlashSaleProductsFromDB = (filters, options) => __awaiter(void 0, void 
         isFlashSale: true,
         flashSaleEndDate: { gte: new Date() },
     };
-    // Add search filters
     if (filters.search) {
         where.OR = [
             { name: { contains: filters.search, mode: "insensitive" } },
             { description: { contains: filters.search, mode: "insensitive" } },
         ];
     }
-    // Add category filter
     if (filters.category) {
         where.categoryId = filters.category;
     }
-    // Add shop filter
     if (filters.shop) {
         where.shopId = filters.shop;
     }
-    // Add flashSalePrice filter only when maxPrice is not null
     if (filters.maxPrice !== null) {
         where.flashSalePrice = { lte: filters.maxPrice };
     }
-    console.log("Final Prisma flash `where` clause:", where);
-    const [data, total] = yield Promise.all([
-        prisma_1.default.product.findMany({
-            where,
-            skip,
-            take: limit,
-            orderBy: {
-                [options.sortBy || "createdAt"]: options.sortOrder || "desc",
-            },
-            include: {
-                shop: true,
-                category: true,
-                OrderItem: true,
-                reviews: true,
-            },
-        }),
-        prisma_1.default.product.count({ where }),
-    ]);
-    const hasNextPage = skip + data.length < total;
-    console.log("Total products:", total, "Has next page:", hasNextPage);
+    console.log("Prisma `where` clause for fetch:", JSON.stringify(where, null, 2));
+    const products = yield prisma_1.default.product.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+            [options.sortBy || "createdAt"]: options.sortOrder || "desc",
+        },
+        include: {
+            shop: true,
+            category: true,
+            OrderItem: true,
+            reviews: true,
+        },
+    });
+    const total = yield prisma_1.default.product.count({ where });
+    const hasNextPage = skip + products.length < total;
+    console.log("Total products:", total, "Current Fetch:", products.length, "Has next page:", hasNextPage);
     return {
         meta: {
             total,
@@ -366,7 +551,7 @@ const getFlashSaleProductsFromDB = (filters, options) => __awaiter(void 0, void 
             limit,
             hasNextPage,
         },
-        data,
+        data: products,
     };
 });
 exports.ProductServices = {

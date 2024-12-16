@@ -217,7 +217,7 @@ const followShopIntoDB = async (userEmail: string, shopId: string) => {
   if (!shop) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Shop not found");
   }
-
+  // console.log(userEmail);
   // Find user by email
   const user = await prisma.user.findFirst({
     where: { email: userEmail },
@@ -228,7 +228,6 @@ const followShopIntoDB = async (userEmail: string, shopId: string) => {
 
   const userId = user.id;
 
-  // Check if the follow relation already exists
   const existingFollower = await prisma.shopFollower.findUnique({
     where: {
       userId_shopId: { userId, shopId },
@@ -236,8 +235,9 @@ const followShopIntoDB = async (userEmail: string, shopId: string) => {
   });
 
   if (existingFollower) {
-    return "Already following the shop";
+    throw new ApiError(StatusCodes.CONFLICT, "Already following the shop");
   }
+  console.log(userId, shopId);
   const follower = await prisma.shopFollower.create({
     data: {
       userId: userId,
@@ -245,7 +245,7 @@ const followShopIntoDB = async (userEmail: string, shopId: string) => {
       followedAt: new Date(),
     },
   });
-
+  console.log(follower);
   return follower;
 };
 

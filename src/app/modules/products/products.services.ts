@@ -50,7 +50,17 @@ const getProductByIdFromDB = async (id: string) => {
     include: {
       shop: true,
       category: true,
-      reviews: true,
+      reviews: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              profilePhoto: true,
+            },
+          },
+        },
+      },
     },
   });
 };
