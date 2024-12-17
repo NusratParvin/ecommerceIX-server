@@ -26,11 +26,11 @@ router.post(
   AuthControllers.forgotPassword
 );
 
-// router.post(
-//   "/change-password",
-//   auth(UserRole.ADMIN, UserRole.VENDOR, UserRole.USER),
-//   AuthControllers.changePassword
-// );
+router.post(
+  "/change-password",
+  auth(UserRole.ADMIN, UserRole.VENDOR, UserRole.USER),
+  AuthControllers.changePassword
+);
 
 router.post(
   "/reset-password",

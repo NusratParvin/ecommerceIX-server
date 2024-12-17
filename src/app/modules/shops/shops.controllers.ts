@@ -122,7 +122,7 @@ const followShop = catchAsync(async (req: Request, res: Response) => {
 
 const unfollowShop = catchAsync(async (req: Request, res: Response) => {
   const { shopId } = req.params;
-  const { userEmail } = req.user.email;
+  const userEmail = req.user.email;
 
   const result = await ShopServices.unfollowShopIntoDB(userEmail, shopId);
 

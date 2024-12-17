@@ -245,7 +245,7 @@ const followShopIntoDB = async (userEmail: string, shopId: string) => {
       followedAt: new Date(),
     },
   });
-  console.log(follower);
+  // console.log(follower);
   return follower;
 };
 
@@ -263,9 +263,9 @@ const unfollowShopIntoDB = async (userEmail: string, shopId: string) => {
   if (!user) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
   }
-
   const userId = user.id;
 
+  console.log(userId, shopId);
   const followerRecord = await prisma.shopFollower.findUnique({
     where: {
       userId_shopId: { userId, shopId },
@@ -275,6 +275,8 @@ const unfollowShopIntoDB = async (userEmail: string, shopId: string) => {
   if (!followerRecord) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Follow record not found");
   }
+
+  console.log(user);
 
   const follower = await prisma.shopFollower.delete({
     where: {
