@@ -104,7 +104,7 @@ const fetchFollowedShops = (0, catchAsync_1.default)((req, res) => __awaiter(voi
     });
 }));
 const followShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userEmail } = req.user.email;
+    const userEmail = req.user.email;
     const { shopId } = req.params;
     const result = yield shops_services_1.ShopServices.followShopIntoDB(userEmail, shopId);
     (0, sendResponse_1.default)(res, {
@@ -116,7 +116,7 @@ const followShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
 }));
 const unfollowShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { shopId } = req.params;
-    const { userEmail } = req.user.email;
+    const userEmail = req.user.email;
     const result = yield shops_services_1.ShopServices.unfollowShopIntoDB(userEmail, shopId);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,

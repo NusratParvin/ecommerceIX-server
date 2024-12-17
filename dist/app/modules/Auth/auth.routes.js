@@ -19,10 +19,6 @@ router.post("/register", uploadImageToCloudinary_1.fileUploader.uploadMulter.sin
 router.post("/forgot-password", 
 // auth(UserRole.ADMIN, UserRole.VENDOR, UserRole.USER),
 auth_controllers_1.AuthControllers.forgotPassword);
-// router.post(
-//   "/change-password",
-//   auth(UserRole.ADMIN, UserRole.VENDOR, UserRole.USER),
-//   AuthControllers.changePassword
-// );
+router.post("/change-password", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.VENDOR, client_1.UserRole.USER), auth_controllers_1.AuthControllers.changePassword);
 router.post("/reset-password", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.VENDOR, client_1.UserRole.USER), auth_controllers_1.AuthControllers.resetPassword);
 exports.AuthRoutes = router;

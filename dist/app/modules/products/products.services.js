@@ -53,7 +53,18 @@ const getProductByIdFromDB = (id) => __awaiter(void 0, void 0, void 0, function*
         include: {
             shop: true,
             category: true,
-            reviews: true,
+            OrderItem: true,
+            reviews: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            profilePhoto: true,
+                        },
+                    },
+                },
+            },
         },
     });
 });
@@ -436,72 +447,6 @@ const getAllProductsForVendorFromDB = (filters, options, email) => __awaiter(voi
         data,
     };
 });
-// const getFlashSaleProductsFromDB = async (
-//   filters: Record<string, any>,
-//   options: {
-//     page?: number;
-//     limit?: number;
-//     sortBy?: string;
-//     sortOrder?: string;
-//   }
-// ) => {
-//   const { page, limit, skip } = pagination.calculatePagination(options);
-//   const where: Record<string, any> = {
-//     isDeleted: false,
-//     status: "ACTIVE",
-//     stock: { gt: 0 },
-//     isFlashSale: true,
-//     flashSaleEndDate: { gte: new Date() },
-//   };
-//   // Add search filters
-//   if (filters.search) {
-//     where.OR = [
-//       { name: { contains: filters.search, mode: "insensitive" } },
-//       { description: { contains: filters.search, mode: "insensitive" } },
-//     ];
-//   }
-//   // Add category filter
-//   if (filters.category) {
-//     where.categoryId = filters.category;
-//   }
-//   // Add shop filter
-//   if (filters.shop) {
-//     where.shopId = filters.shop;
-//   }
-//   // Add flashSalePrice filter only when maxPrice is not null
-//   if (filters.maxPrice !== null) {
-//     where.flashSalePrice = { lte: filters.maxPrice };
-//   }
-//   console.log("Final Prisma flash `where` clause:", where);
-//   const [data, total] = await Promise.all([
-//     prisma.product.findMany({
-//       where,
-//       skip,
-//       take: limit,
-//       orderBy: {
-//         [options.sortBy || "createdAt"]: options.sortOrder || "desc",
-//       },
-//       include: {
-//         shop: true,
-//         category: true,
-//         OrderItem: true,
-//         reviews: true,
-//       },
-//     }),
-//     prisma.product.count({ where }),
-//   ]);
-//   const hasNextPage = skip + data.length < total;
-//   console.log("Total products:", total, "Has next page:", hasNextPage);
-//   return {
-//     meta: {
-//       total,
-//       page,
-//       limit,
-//       hasNextPage,
-//     },
-//     data,
-//   };
-// };
 const getFlashSaleProductsFromDB = (filters, options) => __awaiter(void 0, void 0, void 0, function* () {
     const { page, limit, skip, sortBy, sortOrder } = pagination_1.pagination.calculatePagination(options);
     const where = {

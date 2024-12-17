@@ -20,10 +20,8 @@ const sendResponse_1 = __importDefault(require("../../../shared/sendResponse"));
 const pick_1 = __importDefault(require("../../../helpers/pick"));
 const categoryFilterableFields = ["name", "searchTerm"];
 const getCategories = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // Extract filters and pagination options from query params
     const filters = (0, pick_1.default)(req.query, categoryFilterableFields);
     const options = (0, pick_1.default)(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-    // Fetch data from the service
     const result = yield categories_services_1.CategoriesServices.getCategoriesFromDB(filters, options);
     // console.log(result);
     (0, sendResponse_1.default)(res, {

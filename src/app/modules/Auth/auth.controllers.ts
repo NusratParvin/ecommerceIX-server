@@ -54,8 +54,11 @@ const registerUser = catchAsync(async (req: Request, res: Response) => {
 
     // Set the access token as an HTTP-only cookie
     res.cookie("accessToken", accessToken, {
-      secure: true, // Set to true in production
+      // secure: true, // Set to true in production
+      // httpOnly: true,
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
     });
 
     sendResponse(res, {

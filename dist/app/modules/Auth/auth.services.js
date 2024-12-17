@@ -137,9 +137,36 @@ const resetPassword = (payload, token) => __awaiter(void 0, void 0, void 0, func
     });
     return updatedUser;
 });
+const changePassword = (user, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(user, payload);
+    const userData = yield prisma_1.default.user.findUniqueOrThrow({
+        where: {
+            email: user.email,
+            status: "ACTIVE",
+        },
+    });
+    const isCorrectPassword = yield bcrypt_1.default.compare(payload.currentPassword, userData.password);
+    if (!isCorrectPassword) {
+        throw new Error("Password incorrect!");
+    }
+    const hashedPassword = yield bcrypt_1.default.hash(payload.newPassword, 12);
+    yield prisma_1.default.user.update({
+        where: {
+            email: userData.email,
+        },
+        data: {
+            password: hashedPassword,
+            // needPasswordChange: false,
+        },
+    });
+    return {
+        message: "Password changed successfully!",
+    };
+});
 exports.AuthServices = {
     loginUserIntoDB,
     registerUserIntoDB,
     forgotPassword,
     resetPassword,
+    changePassword,
 };

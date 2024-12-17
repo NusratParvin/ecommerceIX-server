@@ -59,8 +59,11 @@ const registerUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         const { token: accessToken } = result;
         // Set the access token as an HTTP-only cookie
         res.cookie("accessToken", accessToken, {
-            secure: true, // Set to true in production
+            // secure: true, // Set to true in production
+            // httpOnly: true,
             httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
         });
         (0, sendResponse_1.default)(res, {
             statusCode: http_status_codes_1.StatusCodes.CREATED,
@@ -103,9 +106,20 @@ const resetPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
         data: null,
     });
 }));
+const changePassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const result = yield auth_services_1.AuthServices.changePassword(user, req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Password Changed successfully",
+        data: result,
+    });
+}));
 exports.AuthControllers = {
     loginUser,
     registerUser,
     resetPassword,
     forgotPassword,
+    changePassword,
 };

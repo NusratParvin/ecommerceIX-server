@@ -183,6 +183,7 @@ const followShopIntoDB = (userEmail, shopId) => __awaiter(void 0, void 0, void 0
     if (!shop) {
         throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Shop not found");
     }
+    // console.log(userEmail);
     // Find user by email
     const user = yield prisma_1.default.user.findFirst({
         where: { email: userEmail },
@@ -191,15 +192,15 @@ const followShopIntoDB = (userEmail, shopId) => __awaiter(void 0, void 0, void 0
         throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
     }
     const userId = user.id;
-    // Check if the follow relation already exists
     const existingFollower = yield prisma_1.default.shopFollower.findUnique({
         where: {
             userId_shopId: { userId, shopId },
         },
     });
     if (existingFollower) {
-        return "Already following the shop";
+        throw new apiErrors_1.default(http_status_codes_1.StatusCodes.CONFLICT, "Already following the shop");
     }
+    console.log(userId, shopId);
     const follower = yield prisma_1.default.shopFollower.create({
         data: {
             userId: userId,
@@ -207,6 +208,7 @@ const followShopIntoDB = (userEmail, shopId) => __awaiter(void 0, void 0, void 0
             followedAt: new Date(),
         },
     });
+    // console.log(follower);
     return follower;
 });
 const unfollowShopIntoDB = (userEmail, shopId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -223,6 +225,7 @@ const unfollowShopIntoDB = (userEmail, shopId) => __awaiter(void 0, void 0, void
         throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
     }
     const userId = user.id;
+    console.log(userId, shopId);
     const followerRecord = yield prisma_1.default.shopFollower.findUnique({
         where: {
             userId_shopId: { userId, shopId },
@@ -231,6 +234,7 @@ const unfollowShopIntoDB = (userEmail, shopId) => __awaiter(void 0, void 0, void
     if (!followerRecord) {
         throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Follow record not found");
     }
+    console.log(user);
     const follower = yield prisma_1.default.shopFollower.delete({
         where: {
             userId_shopId: { userId, shopId },

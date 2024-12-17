@@ -50,6 +50,7 @@ const getProductByIdFromDB = async (id: string) => {
     include: {
       shop: true,
       category: true,
+      OrderItem: true,
       reviews: {
         include: {
           user: {

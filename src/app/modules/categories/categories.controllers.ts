@@ -9,11 +9,9 @@ import pick from "../../../helpers/pick";
 const categoryFilterableFields = ["name", "searchTerm"];
 
 const getCategories = catchAsync(async (req: Request, res: Response) => {
-  // Extract filters and pagination options from query params
   const filters = pick(req.query, categoryFilterableFields);
   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
 
-  // Fetch data from the service
   const result = await CategoriesServices.getCategoriesFromDB(filters, options);
   // console.log(result);
   sendResponse(res, {
