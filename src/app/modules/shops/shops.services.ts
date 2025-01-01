@@ -142,7 +142,12 @@ const getAllShopsFromDB = async (filters: any, options: any) => {
   };
 };
 const getAllShopsForAllFromDB = async () => {
-  const shops = await prisma.shop.findMany();
+  const shops = await prisma.shop.findMany({
+    include: {
+      products: true,
+      followers: true,
+    },
+  });
 
   return shops;
 };

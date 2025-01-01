@@ -165,7 +165,7 @@ const getAllProductsForVendor = catchAsync(
 );
 
 const getFlashSaleProducts = catchAsync(async (req: Request, res: Response) => {
-  console.log("in flash");
+  // console.log("in flash");
   const filters = {
     minPrice: req.query.minPrice ? Number(req.query.minPrice) : null,
     maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : null,
@@ -199,6 +199,20 @@ const getFlashSaleProducts = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getBestSellingProducts = catchAsync(
+  async (req: Request, res: Response) => {
+    console.log("best");
+    const products = await ProductServices.getBestSellingProductsFromDB();
+    console.log(products);
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Bestselling products retrieved successfully!",
+      data: products,
+    });
+  }
+);
+
 export const ProductControllers = {
   getAllProducts,
   getFlashSaleProducts,
@@ -210,4 +224,5 @@ export const ProductControllers = {
   updateProduct,
   updateProductStatus,
   deleteProduct,
+  getBestSellingProducts,
 };

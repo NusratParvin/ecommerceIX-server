@@ -49,6 +49,7 @@ router.get(
   ProductControllers.getAllProductsForVendor
 );
 router.get("/flash-Sale", ProductControllers.getFlashSaleProducts);
+router.get("/bestselling", ProductControllers.getBestSellingProducts);
 router.get("/category/:categoryId", ProductControllers.getProductsByCategory);
 router.get("/:id", ProductControllers.getProductById);
 router.delete("/:id", ProductControllers.deleteProduct);

@@ -129,7 +129,12 @@ const getAllShopsFromDB = (filters, options) => __awaiter(void 0, void 0, void 0
     };
 });
 const getAllShopsForAllFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    const shops = yield prisma_1.default.shop.findMany();
+    const shops = yield prisma_1.default.shop.findMany({
+        include: {
+            products: true,
+            followers: true,
+        },
+    });
     return shops;
 });
 const updateShopIntoDB = (shopId, data, file) => __awaiter(void 0, void 0, void 0, function* () {

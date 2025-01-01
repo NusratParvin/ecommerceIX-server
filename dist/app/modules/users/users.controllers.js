@@ -89,6 +89,37 @@ const deleteUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
         message: "User deleted successfully!",
     });
 }));
+const addSubscriber = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.body;
+    const subscriber = yield users_services_1.UserServices.subscribeToNewsletter(email);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.CREATED,
+        success: true,
+        message: "Subscribed to the newsletter successfully!",
+        data: subscriber,
+    });
+}));
+// Get all subscribers
+const fetchAllSubscribers = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const subscribers = yield users_services_1.UserServices.getAllSubscribers();
+    console.log(subscribers);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Fetched all newsletter subscribers successfully!",
+        data: subscribers,
+    });
+}));
+// Unsubscribe a user
+const removeSubscriber = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    yield users_services_1.UserServices.unsubscribeFromNewsletter(id);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Unsubscribed successfully!",
+    });
+}));
 exports.UserControllers = {
     getAllUsers,
     deleteUser,
@@ -96,4 +127,7 @@ exports.UserControllers = {
     updateUserRole,
     getUserById,
     getUserByEmail,
+    addSubscriber,
+    fetchAllSubscribers,
+    removeSubscriber,
 };

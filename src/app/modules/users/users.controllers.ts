@@ -86,6 +86,42 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const addSubscriber = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
+  const subscriber = await UserServices.subscribeToNewsletter(email);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.CREATED,
+    success: true,
+    message: "Subscribed to the newsletter successfully!",
+    data: subscriber,
+  });
+});
+
+// Get all subscribers
+const fetchAllSubscribers = catchAsync(async (req: Request, res: Response) => {
+  const subscribers = await UserServices.getAllSubscribers();
+  console.log(subscribers);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Fetched all newsletter subscribers successfully!",
+    data: subscribers,
+  });
+});
+
+// Unsubscribe a user
+const removeSubscriber = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  await UserServices.unsubscribeFromNewsletter(id);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Unsubscribed successfully!",
+  });
+});
+
 export const UserControllers = {
   getAllUsers,
   deleteUser,
@@ -93,4 +129,7 @@ export const UserControllers = {
   updateUserRole,
   getUserById,
   getUserByEmail,
+  addSubscriber,
+  fetchAllSubscribers,
+  removeSubscriber,
 };

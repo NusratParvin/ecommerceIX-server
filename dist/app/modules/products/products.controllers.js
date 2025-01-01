@@ -144,7 +144,7 @@ const getAllProductsForVendor = (0, catchAsync_1.default)((req, res) => __awaite
     });
 }));
 const getFlashSaleProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("in flash");
+    // console.log("in flash");
     const filters = {
         minPrice: req.query.minPrice ? Number(req.query.minPrice) : null,
         maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : null,
@@ -169,6 +169,17 @@ const getFlashSaleProducts = (0, catchAsync_1.default)((req, res) => __awaiter(v
         data: result.data,
     });
 }));
+const getBestSellingProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("best");
+    const products = yield products_services_1.ProductServices.getBestSellingProductsFromDB();
+    console.log(products);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: "Bestselling products retrieved successfully!",
+        data: products,
+    });
+}));
 exports.ProductControllers = {
     getAllProducts,
     getFlashSaleProducts,
@@ -180,4 +191,5 @@ exports.ProductControllers = {
     updateProduct,
     updateProductStatus,
     deleteProduct,
+    getBestSellingProducts,
 };

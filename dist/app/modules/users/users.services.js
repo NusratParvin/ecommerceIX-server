@@ -122,6 +122,30 @@ const deleteUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () 
         data: { status: client_1.ActiveStatus.DELETED },
     });
 });
+const subscribeToNewsletter = (email) => __awaiter(void 0, void 0, void 0, function* () {
+    const existingSubscriber = yield prisma.newsletter.findUnique({
+        where: { email },
+    });
+    if (existingSubscriber) {
+        throw new Error("This email is already subscribed.");
+    }
+    return yield prisma.newsletter.create({
+        data: { email },
+    });
+});
+const getAllSubscribers = () => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("in news");
+    return yield prisma.newsletter.findMany({
+        where: { isSubscribed: true },
+        orderBy: { createdAt: "desc" },
+    });
+});
+const unsubscribeFromNewsletter = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield prisma.newsletter.update({
+        where: { id },
+        data: { isSubscribed: false },
+    });
+});
 exports.UserServices = {
     getUserByIdFromDB,
     getUserByEmailFromDB,
@@ -129,4 +153,7 @@ exports.UserServices = {
     updateUserStatusIntoDB,
     updateUserRoleIntoDB,
     deleteUserFromDB,
+    subscribeToNewsletter,
+    getAllSubscribers,
+    unsubscribeFromNewsletter,
 };
