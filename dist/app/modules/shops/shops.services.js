@@ -173,7 +173,22 @@ const updateShopStatusIntoDB = (shopId, status) => __awaiter(void 0, void 0, voi
 const getFollowedShops = (userEmail) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield prisma_1.default.user.findFirst({
         where: { email: userEmail },
-        include: { followedShops: true },
+        include: {
+            followedShops: {
+                include: {
+                    shop: {
+                        include: {
+                            _count: {
+                                select: {
+                                    products: true,
+                                    followers: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
     });
     if (!user) {
         throw new apiErrors_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");

@@ -44,7 +44,7 @@ const getCategoriesFromDB = async (filters: any, options: any) => {
 
   // Count total records for meta
   const totalRecords = await prisma.category.count({ where });
-
+  // console.log(totalRecords, "ghh");
   return {
     meta: {
       page,
@@ -55,6 +55,7 @@ const getCategoriesFromDB = async (filters: any, options: any) => {
     data: categories,
   };
 };
+
 const getCategoriesForAllFromDB = async () => {
   const categories = await prisma.category.findMany({
     include: {

@@ -17,7 +17,7 @@ The E-Commerce Application is designed to provide a comprehensive online shoppin
 - **Prisma**: ORM for PostgreSQL
 - **JWT**: For authentication
 - **Cloudinary**: For image uploads
-- **Aamarpay/Stripe**: For payment processing
+- **Stripe**: For payment processing
 - **Nodemailer**: For email sending functionalities
 - **Bcrypt.js**: For hashing passwords
 
@@ -66,7 +66,7 @@ The API will be available at http://localhost:3000.
 - **Product Management**: Vendors can add, edit, and delete products.
 - **Order Management**: Track and manage customer orders.
 - **User Management**: Admins can manage user accounts and permissions.
-- **Payment Integration**: Supports Aamarpay and Stripe for transactions.
+- **Payment Integration**: Supports Stripe for transactions.
 - **Image Uploads**: Integrated with Cloudinary for storing product images.
 - **Email Notifications**: Automated email notifications using Nodemailer.
 ````

@@ -20,19 +20,6 @@ router.post(
   }
 );
 
-// router.patch(
-//   "/:shopId",
-//   auth(UserRole.VENDOR),
-//   fileUploader.uploadMulter.single("file"),
-//   (req: Request, res: Response, next: NextFunction) => {
-//     req.body = shopValidationSchemas.updateShopSchema.parse(
-//       JSON.parse(req.body.data)
-//     );
-
-//     return ShopControllers.updateShop(req, res, next);
-//   }
-// );
-
 router.patch(
   "/:shopId",
   auth(UserRole.ADMIN, UserRole.VENDOR),

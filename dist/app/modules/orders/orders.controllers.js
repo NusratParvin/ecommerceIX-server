@@ -69,7 +69,8 @@ const getAllOrders = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
 const getOrdersByShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.user;
     console.log(email);
-    const filters = (0, pick_1.default)(req.query, orderFilterableFields);
+    // const filters = pick(req.query, orderFilterableFields);
+    const filters = (0, pick_1.default)(req.query, ["shopId", "orderId", "searchTerm"]);
     const options = (0, pick_1.default)(req.query, paginationFields);
     const result = yield orders_services_1.OrdersServices.getOrdersByShopFromDB(filters, options, email);
     (0, sendResponse_1.default)(res, {

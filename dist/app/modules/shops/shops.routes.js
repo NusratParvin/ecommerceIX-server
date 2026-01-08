@@ -15,17 +15,6 @@ router.post("/", (0, auth_1.default)(client_1.UserRole.VENDOR), uploadImageToClo
     req.body = shops_validations_1.shopValidationSchemas.createShopSchema.parse(JSON.parse(req.body.data));
     return shops_controllers_1.ShopControllers.createShop(req, res, next);
 });
-// router.patch(
-//   "/:shopId",
-//   auth(UserRole.VENDOR),
-//   fileUploader.uploadMulter.single("file"),
-//   (req: Request, res: Response, next: NextFunction) => {
-//     req.body = shopValidationSchemas.updateShopSchema.parse(
-//       JSON.parse(req.body.data)
-//     );
-//     return ShopControllers.updateShop(req, res, next);
-//   }
-// );
 router.patch("/:shopId", (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.VENDOR), uploadImageToCloudinary_1.fileUploader.uploadMulter.single("file"), // Handle file uploads
 (req, res, next) => {
     // Parse the `data` field in FormData

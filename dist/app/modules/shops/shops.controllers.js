@@ -29,7 +29,7 @@ const createShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
 }));
 const getMyShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    console.log(user);
+    // console.log(user);
     const shop = yield shops_services_1.ShopServices.getShopByOwnerFromDB(user.email);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
@@ -96,6 +96,7 @@ const fetchFollowedShops = (0, catchAsync_1.default)((req, res) => __awaiter(voi
         });
     }
     const followedShops = yield shops_services_1.ShopServices.getFollowedShops(userEmail);
+    console.log(followedShops);
     return (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: 200,

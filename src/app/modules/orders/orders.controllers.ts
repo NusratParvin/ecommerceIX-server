@@ -83,7 +83,8 @@ const getAllOrders = catchAsync(async (req: Request, res: Response) => {
 const getOrdersByShop = catchAsync(async (req, res) => {
   const { email } = req.user;
   console.log(email);
-  const filters = pick(req.query, orderFilterableFields);
+  // const filters = pick(req.query, orderFilterableFields);
+  const filters = pick(req.query, ["shopId", "orderId", "searchTerm"]);
   const options = pick(req.query, paginationFields);
 
   const result = await OrdersServices.getOrdersByShopFromDB(

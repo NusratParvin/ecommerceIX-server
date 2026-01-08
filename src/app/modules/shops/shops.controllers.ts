@@ -19,7 +19,7 @@ const createShop = catchAsync(async (req: Request, res: Response) => {
 
 const getMyShop = catchAsync(async (req, res) => {
   const user = req.user;
-  console.log(user);
+  // console.log(user);
   const shop = await ShopServices.getShopByOwnerFromDB(user.email);
 
   sendResponse(res, {
@@ -97,7 +97,7 @@ const fetchFollowedShops = catchAsync(async (req: Request, res: Response) => {
     });
   }
   const followedShops = await ShopServices.getFollowedShops(userEmail);
-
+  console.log(followedShops);
   return sendResponse(res, {
     success: true,
     statusCode: 200,

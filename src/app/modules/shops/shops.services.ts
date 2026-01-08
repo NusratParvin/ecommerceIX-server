@@ -204,7 +204,22 @@ const updateShopStatusIntoDB = async (shopId: string, status: ShopStatus) => {
 const getFollowedShops = async (userEmail: string) => {
   const user = await prisma.user.findFirst({
     where: { email: userEmail },
-    include: { followedShops: true },
+    include: {
+      followedShops: {
+        include: {
+          shop: {
+            include: {
+              _count: {
+                select: {
+                  products: true,
+                  followers: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!user) {
