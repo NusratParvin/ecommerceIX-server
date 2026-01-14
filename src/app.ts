@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://ix-client.vercel.app"], // Array for multiple origins
+    // origin: ["http://localhost:3000", "https://ix-client.vercel.app"], // Array for multiple origins
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // Allows cookies to be sent with cross-origin requests
   })
