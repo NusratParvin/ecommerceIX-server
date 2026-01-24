@@ -3,25 +3,34 @@ import prisma from "../../../../shared/prisma";
 export const getUserStatsKPI = async () => {
   const totalUser = await prisma.user.count();
 
-  const newUsersInLast30Days = await prisma.user.count({
+  const usersInLast30Days = await prisma.user.count({
     where: {
       createdAt: {
         gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
       },
     },
   });
+  const usersInPrev30Days = await prisma.user.count({
+    where: {
+      createdAt: {
+        gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        lte: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+      },
+    },
+  });
 
-  let newUsersPercentOfTotal = 0;
-  totalUser === 0
-    ? 0
-    : (newUsersPercentOfTotal = Number(
-        ((newUsersInLast30Days / totalUser) * 100).toFixed(1)
-      ));
+  const changeInUsers = usersInLast30Days - usersInPrev30Days;
 
-  console.log(totalUser, newUsersInLast30Days, newUsersPercentOfTotal);
+  const userGrowth =
+    usersInPrev30Days === 0
+      ? usersInLast30Days === 0
+        ? 0
+        : 100
+      : Number((changeInUsers / usersInPrev30Days) * 100).toFixed(1);
+
+  console.log(totalUser, userGrowth);
   return {
     totalUser,
-    newUsersInLast30Days,
-    newUsersPercentOfTotal,
+    userGrowth,
   };
 };

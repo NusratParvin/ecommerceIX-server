@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,9 +7,175 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//schema  model
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  password      String
+  role          UserRole       @default(USER)
+  status        ActiveStatus   @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  profilePhoto  String?
+  orders        Order[]
+  reviews       Review[]
+  shops         Shop[]
+  followedShops ShopFollower[]
+  Transaction   Transaction[]
 
-// Enums
+  @@map("user")
+}
+
+model ShopFollower {
+  userId     String
+  shopId     String
+  followedAt DateTime @default(now())
+  shop       Shop     @relation(fields: [shopId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@id([userId, shopId])
+  @@map("shopFollower")
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  isDeleted Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  imageUrl  String
+  products  Product[]
+
+  @@map("category")
+}
+
+model Product {
+  id                 String        @id @default(uuid())
+  name               String
+  description        String?
+  price              Float
+  discount           Float?
+  shopId             String
+  categoryId         String
+  imageUrl           String?
+  isFlashSale        Boolean       @default(false)
+  flashSalePrice     Float?
+  flashSaleStartDate DateTime?
+  flashSaleEndDate   DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  isDeleted          Boolean       @default(false)
+  stock              Int
+  status             ProductStatus @default(ACTIVE)
+  rating             Float         @default(0)
+  OrderItem          OrderItem[]
+  category           Category      @relation(fields: [categoryId], references: [id])
+  shop               Shop          @relation(fields: [shopId], references: [id])
+  reviews            Review[]
+
+  @@map("product")
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  userId        String
+  totalPrice    Float
+  paymentStatus PaymentStatus
+  paymentMethod String
+  couponId      String?
+  createdAt     DateTime      @default(now())
+  shippingInfo  Json
+  shopId        String
+  coupon        Coupon?       @relation(fields: [couponId], references: [id])
+  shop          Shop          @relation(fields: [shopId], references: [id])
+  user          User          @relation(fields: [userId], references: [id])
+  items         OrderItem[]
+  Transaction   Transaction[]
+
+  @@map("order")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int     @default(1)
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("orderItem")
+}
+
+model Shop {
+  id          String         @id @default(uuid())
+  name        String
+  description String
+  ownerId     String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  logo        String?
+  status      ShopStatus     @default(ACTIVE)
+  Order       Order[]
+  products    Product[]
+  owner       User           @relation(fields: [ownerId], references: [id])
+  followers   ShopFollower[]
+
+  @@map("shop")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Float
+  comment   String?
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  isDeleted Boolean  @default(false)
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("review")
+}
+
+model Coupon {
+  id             String   @id @default(uuid())
+  code           String   @unique
+  discountAmount Float
+  expirationDate DateTime
+  createdAt      DateTime @default(now())
+  orders         Order[]
+
+  @@map("coupon")
+}
+
+model Transaction {
+  id                    String          @id @default(uuid())
+  orderId               String?
+  userId                String
+  amount                Float
+  paymentMethod         String
+  paymentStatus         PaymentStatus
+  type                  TransactionType
+  createdAt             DateTime        @default(now())
+  description           String?
+  stripePaymentIntentId String
+  order                 Order?          @relation(fields: [orderId], references: [id])
+  user                  User            @relation(fields: [userId], references: [id])
+
+  @@map("transaction")
+}
+
+model Newsletter {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  isSubscribed Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("newsletter")
+}
+
 enum UserRole {
   USER
   VENDOR
@@ -49,200 +209,4 @@ enum PaymentStatus {
 enum TransactionType {
   ORDER_PAYMENT
   SHOP_PAYOUT
-}
-
-// Models
-model User {
-  id           String  @id @default(uuid())
-  name         String
-  email        String  @unique
-  password     String
-  profilePhoto String?
-
-  role   UserRole     @default(USER)
-  status ActiveStatus @default(ACTIVE)
-  // needsPasswordChange Boolean      @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-
-  // Relations
-  shops         Shop[]
-  orders        Order[]
-  reviews       Review[]
-  followedShops ShopFollower[]
-  Transaction   Transaction[]
-
-  @@map("user")
-}
-
-model ShopFollower {
-  userId     String
-  shopId     String
-  followedAt DateTime @default(now())
-
-  // Relations
-  user User @relation(fields: [userId], references: [id])
-  shop Shop @relation(fields: [shopId], references: [id])
-
-  @@id([userId, shopId])
-  @@map("shopFollower")
-}
-
-model Category {
-  id        String   @id @default(uuid())
-  imageUrl  String
-  name      String   @unique
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-
-  // Relations
-  products Product[]
-
-  @@map("category")
-}
-
-model Product {
-  id                 String        @id @default(uuid())
-  name               String
-  description        String?
-  price              Float
-  stock              Int
-  discount           Float?
-  shopId             String
-  categoryId         String
-  imageUrl           String?
-  status             ProductStatus @default(ACTIVE)
-  rating             Float         @default(0)
-  // Flash Sale Fields
-  isFlashSale        Boolean       @default(false)
-  flashSalePrice     Float?
-  flashSaleStartDate DateTime?
-  flashSaleEndDate   DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  isDeleted Boolean  @default(false)
-
-  // Relations
-  shop      Shop        @relation(fields: [shopId], references: [id])
-  category  Category    @relation(fields: [categoryId], references: [id])
-  reviews   Review[]
-  OrderItem OrderItem[]
-
-  @@map("product")
-}
-
-model Order {
-  id            String        @id @default(uuid())
-  userId        String
-  shopId        String
-  totalPrice    Float
-  paymentStatus PaymentStatus
-  paymentMethod String
-  couponId      String?
-  shippingInfo  Json
-  createdAt     DateTime      @default(now())
-
-  // Relations
-  user User @relation(fields: [userId], references: [id])
-  shop Shop @relation(fields: [shopId], references: [id])
-
-  coupon      Coupon?       @relation(fields: [couponId], references: [id])
-  items       OrderItem[]
-  Transaction Transaction[]
-
-  @@map("order")
-}
-
-model OrderItem {
-  id        String @id @default(uuid())
-  orderId   String
-  productId String
-  quantity  Int    @default(1)
-  price     Float
-
-  // Relations
-  order   Order   @relation(fields: [orderId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
-
-  @@map("orderItem")
-}
-
-model Shop {
-  id          String     @id @default(uuid())
-  name        String
-  description String
-  logo        String?
-  ownerId     String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt()
-  status      ShopStatus @default(ACTIVE)
-
-  // Relations
-  owner     User           @relation(fields: [ownerId], references: [id])
-  products  Product[]
-  followers ShopFollower[]
-  Order     Order[]
-
-  @@map("shop")
-}
-
-model Review {
-  id        String   @id @default(uuid())
-  rating    Float
-  comment   String?
-  userId    String
-  productId String
-  createdAt DateTime @default(now())
-  isDeleted Boolean  @default(false)
-
-  // Relations
-  user    User    @relation(fields: [userId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
-
-  @@map("review")
-}
-
-model Coupon {
-  id             String   @id @default(uuid())
-  code           String   @unique
-  discountAmount Float
-  expirationDate DateTime
-  createdAt      DateTime @default(now())
-
-  // Relations
-  orders Order[]
-
-  @@map("coupon")
-}
-
-model Transaction {
-  id                    String          @id @default(uuid())
-  orderId               String?
-  userId                String
-  amount                Float
-  paymentMethod         String
-  paymentStatus         PaymentStatus
-  type                  TransactionType
-  stripePaymentIntentId String
-  createdAt             DateTime        @default(now())
-  description           String?
-
-  // Relations
-  order Order? @relation(fields: [orderId], references: [id])
-  user  User   @relation(fields: [userId], references: [id])
-
-  @@map("transaction")
-}
-
-model Newsletter {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  isSubscribed Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt()
-
-  @@map("newsletter")
 }

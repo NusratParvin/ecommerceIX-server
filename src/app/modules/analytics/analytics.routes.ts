@@ -7,8 +7,14 @@ const router = express.Router();
 
 router.get(
   "/dashboard",
+  auth(UserRole.ADMIN),
+  AnalyticsControllers.getAdminDashboardKPIData,
+);
+
+router.get(
+  "/dashboard/sales-trend",
   // auth(UserRole.ADMIN),
-  AnalyticsControllers.getAdminDashboardData
+  AnalyticsControllers.getAdminDashboardSalesTrendData,
 );
 
 export const AnalyticsRoutes = router;

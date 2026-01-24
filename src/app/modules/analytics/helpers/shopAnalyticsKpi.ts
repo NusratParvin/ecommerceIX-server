@@ -7,7 +7,7 @@ export const getShopStatsKPI = async () => {
     },
   });
 
-  const newShopsInLast30Days = await prisma.shop.count({
+  const shopsInLast30Days = await prisma.shop.count({
     where: {
       createdAt: {
         gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
@@ -15,17 +15,27 @@ export const getShopStatsKPI = async () => {
     },
   });
 
-  let newShopsPercentOfTotal = 0;
-  activeShops === 0
-    ? 0
-    : (newShopsPercentOfTotal = Number(
-        ((newShopsInLast30Days / activeShops) * 100).toFixed(1)
-      ));
+  const shopsInPrev30Days = await prisma.shop.count({
+    where: {
+      createdAt: {
+        gte: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000), // ✅ 60 days ago
+        lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // ✅ up to 30 days ago
+      },
+    },
+  });
 
-  //   console.log(newUsersInLast30Days);
+  const changeInShops = shopsInLast30Days - shopsInPrev30Days;
+
+  const shopGrowth =
+    shopsInPrev30Days === 0
+      ? shopsInLast30Days === 0
+        ? 0
+        : 100
+      : Number(((changeInShops / shopsInPrev30Days) * 100).toFixed(1));
+
   return {
     activeShops,
-    newShopsInLast30Days,
-    newShopsPercentOfTotal,
+
+    shopGrowth,
   };
 };
