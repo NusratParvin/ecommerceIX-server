@@ -35,7 +35,37 @@ const getAdminDashboardSalesTrendData = catchAsync(
   },
 );
 
+const getAdminDashboardShopPerformanceData = catchAsync(
+  async (req: Request, res: Response) => {
+    const result =
+      await AnalyticsServices.getAdminDashboardShopPerformanceDataFromDB();
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Shop performance data fetched successfully",
+      data: result,
+    });
+  },
+);
+
+const getAdminDashboardCategoryDistributionData = catchAsync(
+  async (req: Request, res: Response) => {
+    const result =
+      await AnalyticsServices.getAdminDashboardCategoryDistributionDataFromDB();
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Category distribution data fetched successfully",
+      data: result,
+    });
+  },
+);
+
 export const AnalyticsControllers = {
   getAdminDashboardKPIData,
   getAdminDashboardSalesTrendData,
+  getAdminDashboardShopPerformanceData,
+  getAdminDashboardCategoryDistributionData,
 };

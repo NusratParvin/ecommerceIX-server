@@ -13,8 +13,20 @@ router.get(
 
 router.get(
   "/dashboard/sales-trend",
-  // auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN),
   AnalyticsControllers.getAdminDashboardSalesTrendData,
+);
+
+router.get(
+  "/dashboard/shop-performance",
+  auth(UserRole.ADMIN),
+  AnalyticsControllers.getAdminDashboardShopPerformanceData,
+);
+
+router.get(
+  "/dashboard/category-distribution",
+  auth(UserRole.ADMIN),
+  AnalyticsControllers.getAdminDashboardCategoryDistributionData,
 );
 
 export const AnalyticsRoutes = router;
