@@ -29,4 +29,10 @@ router.get(
   AnalyticsControllers.getAdminDashboardCategoryDistributionData,
 );
 
+router.get(
+  "/dashboard/platform-insight",
+  // auth(UserRole.ADMIN),
+  AnalyticsControllers.getAdminDashboardPlatformInsightData,
+);
+
 export const AnalyticsRoutes = router;

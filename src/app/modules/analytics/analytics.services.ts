@@ -244,9 +244,65 @@ const getAdminDashboardCategoryDistributionDataFromDB = async () => {
   };
 };
 
+const getAdminDashboardPlatformInsightDataFromDB = async (period: number) => {
+  const givenDate = new Date(Date.now() - 185 * 24 * 60 * 60 * 1000);
+
+  const topProducts = await prisma.orderItem.groupBy({
+    by: ["productId"],
+    _count: { productId: true },
+
+    where: {
+      order: { createdAt: { gte: givenDate }, paymentStatus: "PAID" },
+      // product: {},
+    },
+    _sum: {
+      quantity: true,
+      price: true,
+    },
+    orderBy: { _count: { productId: "desc" } },
+  });
+
+  const productSalesData = topProducts.map((p) => ({
+    productId: p.productId,
+    totalQuantity: p._sum.quantity || 0,
+    totalRevenue: p._sum.price || 0, // This is total revenue from this product
+  }));
+
+  // Step 2: Get product details for these IDs
+  const productIds = productSalesData.map((p) => p.productId);
+
+  const categories = await prisma.product.findMany({
+    where: {
+      id: { in: productIds },
+    },
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      category: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  const totalSales = await prisma.order.aggregate({
+    where: {
+      createdAt: { gte: givenDate },
+      paymentStatus: "PAID",
+    },
+    _sum: { totalPrice: true },
+  });
+
+  console.log(productSalesData, categories, totalSales);
+  // return items;
+};
+
 export const AnalyticsServices = {
   getAdminDashboardKPIDataFromDB,
   getAdminDashboardSalesTrendDataFromDB,
   getAdminDashboardShopPerformanceDataFromDB,
   getAdminDashboardCategoryDistributionDataFromDB,
+  getAdminDashboardPlatformInsightDataFromDB,
 };

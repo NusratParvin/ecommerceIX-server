@@ -17,12 +17,11 @@ const processOrderAndPaymentIntoDB = async (
   totalPrice: number,
   couponId: string | null,
   shippingInfo: ShippingInfoProps,
-  paymentIntentId: string
+  paymentIntentId: string,
 ) => {
   return await prisma.$transaction(async (prisma) => {
-    const paymentIntent = await stripeClient.paymentIntents.retrieve(
-      paymentIntentId
-    );
+    const paymentIntent =
+      await stripeClient.paymentIntents.retrieve(paymentIntentId);
 
     if (paymentIntent.status !== "succeeded") {
       throw new Error("Payment not successful");
@@ -31,13 +30,29 @@ const processOrderAndPaymentIntoDB = async (
     if (couponId) {
       await prisma.coupon.findUniqueOrThrow({ where: { id: couponId } });
     }
-    console.log(userId);
+    // console.log(userId);
     await prisma.user.findUniqueOrThrow({
       where: { id: userId, status: ActiveStatus.ACTIVE },
     });
     await prisma.shop.findUniqueOrThrow({
       where: { id: shopId, status: ActiveStatus.ACTIVE },
     });
+
+    for (const item of items) {
+      const res = await prisma.product.updateMany({
+        where: {
+          id: item.productId,
+          shopId,
+          isDeleted: false,
+          stock: { gte: item.quantity },
+        },
+        data: { stock: { decrement: item.quantity } },
+      });
+
+      if (res.count !== 1) {
+        throw new Error(`Insufficient stock for product ${item.productId}`);
+      }
+    }
 
     const order = await prisma.order.create({
       data: {
@@ -72,6 +87,8 @@ const processOrderAndPaymentIntoDB = async (
       },
     });
 
+    await prisma.product.update;
+
     return {
       order,
       transaction,
@@ -81,7 +98,7 @@ const processOrderAndPaymentIntoDB = async (
 
 const getAllOrdersFromDB = async (
   filters: Record<string, any>,
-  options: { page: number; limit: number; sortBy: string; sortOrder: string }
+  options: { page: number; limit: number; sortBy: string; sortOrder: string },
 ) => {
   const {
     page = 1,
@@ -133,7 +150,7 @@ const getOrdersByShopFromDB = async (
     sortBy?: string;
     sortOrder?: string;
   },
-  email: string
+  email: string,
 ) => {
   const { page, limit, skip, sortBy, sortOrder } =
     pagination.calculatePagination(options);
@@ -270,7 +287,7 @@ const getShopOrderDetailsById = async (orderId: string, userEmail: string) => {
   if (!order) {
     throw new ApiError(
       StatusCodes.NOT_FOUND,
-      "Order not found or access denied."
+      "Order not found or access denied.",
     );
   }
 
@@ -285,7 +302,7 @@ const getOrdersByUserFromDB = async (
     sortBy?: string;
     sortOrder?: string;
   },
-  userEmail: string
+  userEmail: string,
 ) => {
   const {
     page,
@@ -366,7 +383,7 @@ const getOrdersByUserFromDB = async (
 
 const getUserOrderDetailsByIdFromDB = async (
   orderId: string,
-  userEmail: string
+  userEmail: string,
 ) => {
   const user = await prisma.user.findFirst({
     where: { email: userEmail },
@@ -411,7 +428,7 @@ const getUserOrderDetailsByIdFromDB = async (
   if (!order) {
     throw new ApiError(
       StatusCodes.NOT_FOUND,
-      "Order not found or you do not have permission to view this order."
+      "Order not found or you do not have permission to view this order.",
     );
   }
 

@@ -63,9 +63,27 @@ const getAdminDashboardCategoryDistributionData = catchAsync(
   },
 );
 
+const getAdminDashboardPlatformInsightData = catchAsync(
+  async (req: Request, res: Response) => {
+    const period = Number(req.query.period as string);
+    const result =
+      await AnalyticsServices.getAdminDashboardPlatformInsightDataFromDB(
+        period,
+      );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Platform insight data fetched successfully",
+      data: result,
+    });
+  },
+);
+
 export const AnalyticsControllers = {
   getAdminDashboardKPIData,
   getAdminDashboardSalesTrendData,
   getAdminDashboardShopPerformanceData,
   getAdminDashboardCategoryDistributionData,
+  getAdminDashboardPlatformInsightData,
 };
