@@ -1,5 +1,6 @@
 import catchAsync from "../../../shared/catchAsync";
 import prisma from "../../../shared/prisma";
+import { newShops } from "./helpers/newShops";
 import { getOrdersKPI } from "./helpers/orderAnalyticsKpi";
 import {
   normalizeForRadarChart,
@@ -7,6 +8,7 @@ import {
 } from "./helpers/prepareShopPerformanceData";
 import { getRevenueKPI } from "./helpers/revenueAnalyticsKpi";
 import { getShopStatsKPI } from "./helpers/shopAnalyticsKpi";
+import { topCategorySales } from "./helpers/topCategorySales";
 import { getUserStatsKPI } from "./helpers/userAnalyticsKpi";
 
 const getAdminDashboardKPIDataFromDB = async () => {
@@ -97,6 +99,7 @@ const getAdminDashboardSalesTrendDataFromDB = async (
 
     data.push(Number(daySales._sum.amount) || 0);
   }
+  // console.log(labels, data);
 
   return { labels, data };
 };
@@ -244,59 +247,14 @@ const getAdminDashboardCategoryDistributionDataFromDB = async () => {
   };
 };
 
-const getAdminDashboardPlatformInsightDataFromDB = async (period: number) => {
-  const givenDate = new Date(Date.now() - 185 * 24 * 60 * 60 * 1000);
+const getAdminDashboardPlatformInsightDataFromDB = async (period = 7) => {
+  const givenDate = new Date(Date.now() - period * 24 * 60 * 60 * 1000);
 
-  const topProducts = await prisma.orderItem.groupBy({
-    by: ["productId"],
-    _count: { productId: true },
+  const topCategory = await topCategorySales(givenDate);
 
-    where: {
-      order: { createdAt: { gte: givenDate }, paymentStatus: "PAID" },
-      // product: {},
-    },
-    _sum: {
-      quantity: true,
-      price: true,
-    },
-    orderBy: { _count: { productId: "desc" } },
-  });
+  const shops = await newShops(givenDate);
 
-  const productSalesData = topProducts.map((p) => ({
-    productId: p.productId,
-    totalQuantity: p._sum.quantity || 0,
-    totalRevenue: p._sum.price || 0, // This is total revenue from this product
-  }));
-
-  // Step 2: Get product details for these IDs
-  const productIds = productSalesData.map((p) => p.productId);
-
-  const categories = await prisma.product.findMany({
-    where: {
-      id: { in: productIds },
-    },
-    select: {
-      id: true,
-      name: true,
-      price: true,
-      category: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  });
-
-  const totalSales = await prisma.order.aggregate({
-    where: {
-      createdAt: { gte: givenDate },
-      paymentStatus: "PAID",
-    },
-    _sum: { totalPrice: true },
-  });
-
-  console.log(productSalesData, categories, totalSales);
-  // return items;
+  return { topCategory, shops };
 };
 
 export const AnalyticsServices = {

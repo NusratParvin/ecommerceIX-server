@@ -13,7 +13,7 @@ router.get(
 
 router.get(
   "/dashboard/sales-trend",
-  auth(UserRole.ADMIN),
+  // auth(UserRole.ADMIN),
   AnalyticsControllers.getAdminDashboardSalesTrendData,
 );
 
@@ -30,7 +30,7 @@ router.get(
 );
 
 router.get(
-  "/dashboard/platform-insight",
+  "/dashboard/platform-insights",
   // auth(UserRole.ADMIN),
   AnalyticsControllers.getAdminDashboardPlatformInsightData,
 );

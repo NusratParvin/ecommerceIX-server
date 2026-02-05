@@ -5,6 +5,7 @@ import { CartItems, ShippingInfoProps } from "./orders.interface";
 import { pagination } from "../../../helpers/pagination";
 import ApiError from "../../errors/apiErrors";
 import { StatusCodes } from "http-status-codes";
+import { calculateProductPrice } from "./helpers/calculateProductPrice";
 
 const stripeClient = new Stripe(process.env.PAYMENT_SECRET_KEY!, {
   apiVersion: "2024-11-20.acacia",
@@ -27,10 +28,25 @@ const processOrderAndPaymentIntoDB = async (
       throw new Error("Payment not successful");
     }
 
+    let coupon = null;
     if (couponId) {
-      await prisma.coupon.findUniqueOrThrow({ where: { id: couponId } });
+      coupon = await prisma.coupon.findUniqueOrThrow({
+        where: { id: couponId },
+      });
+
+      if (!coupon) {
+        throw new Error("Invalid coupon");
+      }
+
+      //  if coupon is expired
+      const now = new Date();
+      if (coupon.expirationDate && coupon.expirationDate < now) {
+        throw new Error("Coupon has expired");
+      }
     }
+
     // console.log(userId);
+
     await prisma.user.findUniqueOrThrow({
       where: { id: userId, status: ActiveStatus.ACTIVE },
     });
@@ -38,7 +54,14 @@ const processOrderAndPaymentIntoDB = async (
       where: { id: shopId, status: ActiveStatus.ACTIVE },
     });
 
-    for (const item of items) {
+    const {
+      items: calculatedItems,
+      subTotal,
+      couponDiscount,
+      finalTotal,
+    } = await calculateProductPrice(items, shopId, coupon);
+
+    for (const item of calculatedItems) {
       const res = await prisma.product.updateMany({
         where: {
           id: item.productId,
@@ -57,14 +80,14 @@ const processOrderAndPaymentIntoDB = async (
     const order = await prisma.order.create({
       data: {
         userId,
-        totalPrice,
+        totalPrice: finalTotal,
         paymentStatus: "PAID",
         paymentMethod: "card",
         couponId,
         shopId,
         shippingInfo,
         items: {
-          create: items.map((item) => ({
+          create: calculatedItems.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
             price: item.price,
@@ -78,7 +101,7 @@ const processOrderAndPaymentIntoDB = async (
       data: {
         orderId: order.id,
         userId,
-        amount: totalPrice,
+        amount: finalTotal,
         paymentMethod: "card",
         paymentStatus: "PAID",
         type: "ORDER_PAYMENT",
@@ -86,8 +109,6 @@ const processOrderAndPaymentIntoDB = async (
         description: "Payment for order",
       },
     });
-
-    await prisma.product.update;
 
     return {
       order,

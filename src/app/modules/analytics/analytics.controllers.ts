@@ -66,6 +66,7 @@ const getAdminDashboardCategoryDistributionData = catchAsync(
 const getAdminDashboardPlatformInsightData = catchAsync(
   async (req: Request, res: Response) => {
     const period = Number(req.query.period as string);
+
     const result =
       await AnalyticsServices.getAdminDashboardPlatformInsightDataFromDB(
         period,
