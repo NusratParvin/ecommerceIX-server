@@ -1,3 +1,4 @@
+import { date } from "zod";
 import catchAsync from "../../../shared/catchAsync";
 import prisma from "../../../shared/prisma";
 import { newShops } from "./helpers/newShops";
@@ -223,15 +224,14 @@ const getAdminDashboardCategoryDistributionDataFromDB = async () => {
   const labels: string[] = [];
   const data: number[] = [];
 
-  // Simple colors array
   const backgroundColors = [
-    "#3B82F6", // blue
-    "#10B981", // green
-    "#F59E0B", // amber
-    "#8B5CF6", // purple
-    "#EC4899", // pink
-    "#14B8A6", // teal
-    "#F97316", // orange
+    "#60A5FA", // medium blue
+    "#34D399", // medium green
+    "#FBBF24", // medium amber
+    "#A78BFA", // medium purple
+    "#F472B6", // medium pink
+    "#2DD4BF", // medium teal
+    "#FB923C", // medium orange
   ];
 
   categories.forEach((category, index) => {
@@ -257,10 +257,20 @@ const getAdminDashboardPlatformInsightDataFromDB = async (period = 7) => {
   return { topCategory, shops };
 };
 
+const getAdminDashboardRecentOrdersDataFromDB = async () => {
+  const lastSevenDays = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const recentOrders = await prisma.order.findMany({
+    where: { createdAt: { gte: lastSevenDays } },
+  });
+  console.log(recentOrders, "recent orders", lastSevenDays);
+  return recentOrders;
+};
+
 export const AnalyticsServices = {
   getAdminDashboardKPIDataFromDB,
   getAdminDashboardSalesTrendDataFromDB,
   getAdminDashboardShopPerformanceDataFromDB,
   getAdminDashboardCategoryDistributionDataFromDB,
   getAdminDashboardPlatformInsightDataFromDB,
+  getAdminDashboardRecentOrdersDataFromDB,
 };

@@ -31,8 +31,14 @@ router.get(
 
 router.get(
   "/dashboard/platform-insights",
-  // auth(UserRole.ADMIN),
+  auth(UserRole.ADMIN),
   AnalyticsControllers.getAdminDashboardPlatformInsightData,
+);
+
+router.get(
+  "/dashboard/recent-orders",
+  auth(UserRole.ADMIN),
+  AnalyticsControllers.getAdminDashboardRecentOrdersData,
 );
 
 export const AnalyticsRoutes = router;
