@@ -95,6 +95,20 @@ const getAdminDashboardRecentOrdersData = catchAsync(
   },
 );
 
+const getAdminDashboardRecentReviewsData = catchAsync(
+  async (req: Request, res: Response) => {
+    const result =
+      await AnalyticsServices.getAdminDashboardRecentReviewsDataFromDB();
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      message: "Recent Reviews data fetched successfully",
+      success: true,
+      data: result,
+    });
+  },
+);
+
 export const AnalyticsControllers = {
   getAdminDashboardKPIData,
   getAdminDashboardSalesTrendData,
@@ -102,4 +116,5 @@ export const AnalyticsControllers = {
   getAdminDashboardCategoryDistributionData,
   getAdminDashboardPlatformInsightData,
   getAdminDashboardRecentOrdersData,
+  getAdminDashboardRecentReviewsData,
 };

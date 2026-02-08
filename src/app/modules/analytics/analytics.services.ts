@@ -259,11 +259,22 @@ const getAdminDashboardPlatformInsightDataFromDB = async (period = 7) => {
 
 const getAdminDashboardRecentOrdersDataFromDB = async () => {
   const lastSevenDays = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
   const recentOrders = await prisma.order.findMany({
     where: { createdAt: { gte: lastSevenDays } },
   });
   console.log(recentOrders, "recent orders", lastSevenDays);
   return recentOrders;
+};
+
+const getAdminDashboardRecentReviewsDataFromDB = async () => {
+  const lastMonth = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  const recentReviews = await prisma.review.findMany({
+    where: { createdAt: { gte: lastMonth } },
+  });
+  console.log(recentReviews, "recent reviews", lastMonth);
+  return recentReviews;
 };
 
 export const AnalyticsServices = {
@@ -273,4 +284,5 @@ export const AnalyticsServices = {
   getAdminDashboardCategoryDistributionDataFromDB,
   getAdminDashboardPlatformInsightDataFromDB,
   getAdminDashboardRecentOrdersDataFromDB,
+  getAdminDashboardRecentReviewsDataFromDB,
 };
