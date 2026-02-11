@@ -48,6 +48,7 @@ const getCategoriesFromDB = (filters, options) => __awaiter(void 0, void 0, void
     });
     // Count total records for meta
     const totalRecords = yield prisma_1.default.category.count({ where });
+    // console.log(totalRecords, "ghh");
     return {
         meta: {
             page,

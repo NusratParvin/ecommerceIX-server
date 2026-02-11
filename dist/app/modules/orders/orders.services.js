@@ -19,6 +19,7 @@ const stripe_1 = require("stripe");
 const pagination_1 = require("../../../helpers/pagination");
 const apiErrors_1 = __importDefault(require("../../errors/apiErrors"));
 const http_status_codes_1 = require("http-status-codes");
+const calculateProductPrice_1 = require("./helpers/calculateProductPrice");
 const stripeClient = new stripe_1.Stripe(process.env.PAYMENT_SECRET_KEY, {
     apiVersion: "2024-11-20.acacia",
 });
@@ -28,27 +29,53 @@ const processOrderAndPaymentIntoDB = (userId, shopId, items, totalPrice, couponI
         if (paymentIntent.status !== "succeeded") {
             throw new Error("Payment not successful");
         }
+        let coupon = null;
         if (couponId) {
-            yield prisma.coupon.findUniqueOrThrow({ where: { id: couponId } });
+            coupon = yield prisma.coupon.findUniqueOrThrow({
+                where: { id: couponId },
+            });
+            if (!coupon) {
+                throw new Error("Invalid coupon");
+            }
+            //  if coupon is expired
+            const now = new Date();
+            if (coupon.expirationDate && coupon.expirationDate < now) {
+                throw new Error("Coupon has expired");
+            }
         }
-        console.log(userId);
+        // console.log(userId);
         yield prisma.user.findUniqueOrThrow({
             where: { id: userId, status: client_1.ActiveStatus.ACTIVE },
         });
         yield prisma.shop.findUniqueOrThrow({
             where: { id: shopId, status: client_1.ActiveStatus.ACTIVE },
         });
+        const { items: calculatedItems, subTotal, couponDiscount, finalTotal, } = yield (0, calculateProductPrice_1.calculateProductPrice)(items, shopId, coupon);
+        for (const item of calculatedItems) {
+            const res = yield prisma.product.updateMany({
+                where: {
+                    id: item.productId,
+                    shopId,
+                    isDeleted: false,
+                    stock: { gte: item.quantity },
+                },
+                data: { stock: { decrement: item.quantity } },
+            });
+            if (res.count !== 1) {
+                throw new Error(`Insufficient stock for product ${item.productId}`);
+            }
+        }
         const order = yield prisma.order.create({
             data: {
                 userId,
-                totalPrice,
+                totalPrice: finalTotal,
                 paymentStatus: "PAID",
                 paymentMethod: "card",
                 couponId,
                 shopId,
                 shippingInfo,
                 items: {
-                    create: items.map((item) => ({
+                    create: calculatedItems.map((item) => ({
                         productId: item.productId,
                         quantity: item.quantity,
                         price: item.price,
@@ -61,7 +88,7 @@ const processOrderAndPaymentIntoDB = (userId, shopId, items, totalPrice, couponI
             data: {
                 orderId: order.id,
                 userId,
-                amount: totalPrice,
+                amount: finalTotal,
                 paymentMethod: "card",
                 paymentStatus: "PAID",
                 type: "ORDER_PAYMENT",

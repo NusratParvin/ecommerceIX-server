@@ -17,6 +17,22 @@ const getAdminDashboardKPIData = catchAsync(
   },
 );
 
+const getAdminDashboardUserGrowthData = catchAsync(
+  async (req: Request, res: Response) => {
+    const timePeriod = Number(req.query.year as string);
+
+    const result =
+      await AnalyticsServices.getAdminDashboardUserGrowthDataFromDB(timePeriod);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "User growth data fetched successfully",
+      data: result,
+    });
+  },
+);
+
 const getAdminDashboardSalesTrendData = catchAsync(
   async (req: Request, res: Response) => {
     const month = req.query.month as string;
@@ -111,6 +127,7 @@ const getAdminDashboardRecentReviewsData = catchAsync(
 
 export const AnalyticsControllers = {
   getAdminDashboardKPIData,
+  getAdminDashboardUserGrowthData,
   getAdminDashboardSalesTrendData,
   getAdminDashboardShopPerformanceData,
   getAdminDashboardCategoryDistributionData,

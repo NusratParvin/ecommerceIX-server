@@ -12,6 +12,12 @@ router.get(
 );
 
 router.get(
+  "/dashboard/user-growth",
+  // auth(UserRole.ADMIN),
+  AnalyticsControllers.getAdminDashboardUserGrowthData,
+);
+
+router.get(
   "/dashboard/sales-trend",
   auth(UserRole.ADMIN),
   AnalyticsControllers.getAdminDashboardSalesTrendData,

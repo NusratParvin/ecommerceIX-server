@@ -1,5 +1,3 @@
-import { date } from "zod";
-import catchAsync from "../../../shared/catchAsync";
 import prisma from "../../../shared/prisma";
 import { newShops } from "./helpers/newShops";
 import { getOrdersKPI } from "./helpers/orderAnalyticsKpi";
@@ -26,46 +24,52 @@ const getAdminDashboardKPIDataFromDB = async () => {
   };
 };
 
-// const getAdminDashboardSalesTrendDataFromDB = async (
-//   monthParam?: string,
-//   yearParam?: string,
-// ) => {
-//   const today = new Date();
+const getAdminDashboardUserGrowthDataFromDB = async (year: number) => {
+  const startOfYear = new Date(year, 0, 1);
+  const endOfYear = new Date(year, 11, 31, 23, 59, 59);
 
-//   const year = yearParam ? Number(yearParam) : today.getFullYear();
-//   const month = monthParam ? Number(monthParam) - 1 : today.getMonth();
-//   console.log(month, year);
-//   const startDate = new Date(year, month, 1);
-//   const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+  const users = await prisma.user.findMany({
+    where: {
+      createdAt: { gte: startOfYear, lte: endOfYear },
+    },
+    select: { createdAt: true },
+    orderBy: { createdAt: "asc" },
+  });
 
-//   const transactionData = await prisma.transaction.groupBy({
-//     by: "createdAt",
-//     where: {
-//       createdAt: {
-//         gte: startDate,
-//         lte: endDate,
-//       },
-//       paymentStatus: "PAID",
-//     },
-//     _sum: {
-//       amount: true,
-//     },
-//     _count: {
-//       id: true,
-//     },
-//     orderBy: {
-//       createdAt: "asc",
-//     },
-//   });
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
-//   const labels = transactionData.map((t) =>
-//     t.createdAt.toISOString().slice(0, 10),
-//   );
-//   const data = transactionData.map((t) => t._sum.amount);
+  const usersByMonth: Record<string, number> = {};
 
-//   console.log(labels, data);
-//   return { labels, data };
-// };
+  months.forEach((month) => {
+    usersByMonth[month] = 0;
+  });
+
+  users.forEach((user) => {
+    const findMonth = months[new Date(user.createdAt).getMonth()];
+
+    usersByMonth[findMonth]++;
+  });
+  // console.log(usersByMonth);
+  const data = {
+    labels: months,
+    data: months.map((month) => usersByMonth[month]),
+  };
+  // console.log(year);
+  return data;
+};
 
 const getAdminDashboardSalesTrendDataFromDB = async (
   monthParam?: string,
@@ -258,10 +262,11 @@ const getAdminDashboardPlatformInsightDataFromDB = async (period = 7) => {
 };
 
 const getAdminDashboardRecentOrdersDataFromDB = async () => {
-  const lastSevenDays = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const lastSevenDays = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
 
   const recentOrders = await prisma.order.findMany({
     where: { createdAt: { gte: lastSevenDays } },
+    orderBy: { createdAt: "desc" },
   });
   console.log(recentOrders, "recent orders", lastSevenDays);
   return recentOrders;
@@ -272,6 +277,7 @@ const getAdminDashboardRecentReviewsDataFromDB = async () => {
 
   const recentReviews = await prisma.review.findMany({
     where: { createdAt: { gte: lastMonth } },
+    orderBy: { createdAt: "desc" },
   });
   console.log(recentReviews, "recent reviews", lastMonth);
   return recentReviews;
@@ -279,6 +285,7 @@ const getAdminDashboardRecentReviewsDataFromDB = async () => {
 
 export const AnalyticsServices = {
   getAdminDashboardKPIDataFromDB,
+  getAdminDashboardUserGrowthDataFromDB,
   getAdminDashboardSalesTrendDataFromDB,
   getAdminDashboardShopPerformanceDataFromDB,
   getAdminDashboardCategoryDistributionDataFromDB,

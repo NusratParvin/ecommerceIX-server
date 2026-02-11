@@ -15,6 +15,7 @@ const orders_routes_1 = require("../modules/orders/orders.routes");
 const transactions_routes_1 = require("../modules/transactions/transactions.routes");
 const reviews_routes_1 = require("../modules/reviews/reviews.routes");
 const subscribers_routes_1 = require("../modules/subscribers/subscribers.routes");
+const analytics_routes_1 = require("../modules/analytics/analytics.routes");
 const router = express_1.default.Router();
 const moduleRoutes = [
     { path: "/auth", route: auth_routes_1.AuthRoutes },
@@ -28,6 +29,7 @@ const moduleRoutes = [
     { path: "/transactions", route: transactions_routes_1.TransactionRoutes },
     { path: "/reviews", route: reviews_routes_1.ReviewsRouters },
     { path: "/subscribers", route: subscribers_routes_1.SubscriberRoutes },
+    { path: "/analytics", route: analytics_routes_1.AnalyticsRoutes },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 exports.default = router;
